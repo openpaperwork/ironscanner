@@ -12,6 +12,18 @@ Pouet
 Pouet
 Done.</property>
   </object>
+  <object class="GtkTextBuffer" id="textbufferSummary">
+    <property name="text" translatable="yes">Personal information that will be attached to the report:
+- Name: Jerome Flesch
+- Email: jflesch@openpaper.work
+
+Summary of the test:
+- Scanner: kwainkwain
+- Sources: Flatbed, ADF
+- Resolutions: 300, 400, 500
+- Mode: Color, Grayscale, BW
+</property>
+  </object>
   <object class="GtkAssistant" id="mainform">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Scanner information collector</property>
@@ -220,31 +232,6 @@ This program is designed to collect as much information as possible regarding yo
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton">
-                            <property name="label" translatable="yes">can scan multiple times</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">False</property>
-                            <property name="tooltip_markup" translatable="yes">If selected, the program will attempt &lt;b&gt;many&lt;/b&gt; scans with various settings (color, resolution, etc) </property>
-                            <property name="hexpand">True</property>
-                            <property name="draw_indicator">True</property>
-                          </object>
-                          <packing>
-                            <property name="left_attach">1</property>
-                            <property name="top_attach">2</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                          </object>
-                          <packing>
-                            <property name="left_attach">0</property>
-                            <property name="top_attach">2</property>
-                          </packing>
-                        </child>
-                        <child>
                           <object class="GtkLabel">
                             <property name="visible">True</property>
                             <property name="sensitive">False</property>
@@ -254,7 +241,18 @@ This program is designed to collect as much information as possible regarding yo
                           </object>
                           <packing>
                             <property name="left_attach">0</property>
-                            <property name="top_attach">3</property>
+                            <property name="top_attach">2</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkComboBox">
+                            <property name="visible">True</property>
+                            <property name="sensitive">False</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                          <packing>
+                            <property name="left_attach">1</property>
+                            <property name="top_attach">2</property>
                           </packing>
                         </child>
                         <child>
@@ -266,17 +264,6 @@ This program is designed to collect as much information as possible regarding yo
                           </object>
                           <packing>
                             <property name="left_attach">0</property>
-                            <property name="top_attach">4</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkComboBox">
-                            <property name="visible">True</property>
-                            <property name="sensitive">False</property>
-                            <property name="can_focus">False</property>
-                          </object>
-                          <packing>
-                            <property name="left_attach">1</property>
                             <property name="top_attach">3</property>
                           </packing>
                         </child>
@@ -288,7 +275,7 @@ This program is designed to collect as much information as possible regarding yo
                           </object>
                           <packing>
                             <property name="left_attach">1</property>
-                            <property name="top_attach">4</property>
+                            <property name="top_attach">3</property>
                           </packing>
                         </child>
                       </object>
@@ -319,21 +306,76 @@ This program is designed to collect as much information as possible regarding yo
       </packing>
     </child>
     <child>
-      <object class="GtkScrolledWindow">
+      <object class="GtkBox">
         <property name="visible">True</property>
-        <property name="can_focus">True</property>
+        <property name="can_focus">False</property>
         <property name="margin_left">20</property>
         <property name="margin_right">20</property>
         <property name="margin_top">20</property>
         <property name="margin_bottom">20</property>
-        <property name="shadow_type">in</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">30</property>
         <child>
-          <object class="GtkTextView" id="textviewSummary">
+          <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="editable">False</property>
-            <property name="buffer">textbufferSummary</property>
+            <property name="can_focus">False</property>
+            <property name="label" translatable="yes">Please put paper sheet(s) in all the selected sources</property>
+            <property name="wrap">True</property>
+            <attributes>
+              <attribute name="weight" value="bold"/>
+              <attribute name="size" value="20000"/>
+            </attributes>
           </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Details of the test that will be run</property>
+                <property name="wrap">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="shadow_type">in</property>
+                <child>
+                  <object class="GtkTextView" id="textviewSummary">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="editable">False</property>
+                    <property name="buffer">textbufferSummary</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
         </child>
       </object>
       <packing>
@@ -565,17 +607,5 @@ Ready to send the results to Openpaper.work.</property>
         <property name="has_padding">False</property>
       </packing>
     </child>
-  </object>
-  <object class="GtkTextBuffer" id="textbufferSummary">
-    <property name="text" translatable="yes">Personal information that will be attached to the report:
-- Name: Jerome Flesch
-- Email: jflesch@openpaper.work
-
-Summary of the test:
-- Scanner: kwainkwain
-- Sources: Flatbed, ADF
-- Resolutions: 300, 400, 500
-- Mode: Color, Grayscale, BW
-</property>
   </object>
 </interface>
