@@ -49,7 +49,7 @@ setup(
     include_package_data=True,
     entry_points={
         'gui_scripts': [
-            'ironscanner = ironscanner:main',
+            'ironscanner = ironscanner.main:main',
         ]
     },
     zip_safe=True,

@@ -2,6 +2,65 @@
 <!-- Generated with glade 3.20.0 -->
 <interface>
   <requires lib="gtk+" version="3.14"/>
+  <object class="GtkListStore" id="liststoreDevices"/>
+  <object class="GtkListStore" id="liststoreLoading">
+    <columns>
+      <!-- column-name loading -->
+      <column type="gchararray"/>
+      <!-- column-name id -->
+      <column type="gint"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">Loading ...</col>
+        <col id="1">0</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkListStore" id="liststoreModes"/>
+  <object class="GtkListStore" id="liststoreResolutions"/>
+  <object class="GtkListStore" id="liststoreScannerTypes">
+    <columns>
+      <!-- column-name typeStr -->
+      <column type="gchararray"/>
+      <!-- column-name typeId -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">Flatbed</col>
+        <col id="1" translatable="yes">flatbed</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Flatbed + Automatic Feeder</col>
+        <col id="1" translatable="yes">flatbed_adf</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Flatbed + Duplex Automatic Document Feeder</col>
+        <col id="1" translatable="yes">flatbed_adf_duplex</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Automatic Document Feeder</col>
+        <col id="1" translatable="yes">adf</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Duplex Automatic Document Feeder</col>
+        <col id="1" translatable="yes">adf_duplex</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Handheld scanner</col>
+        <col id="1" translatable="yes">handheld</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Portable scanner</col>
+        <col id="1" translatable="yes">portable</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Other</col>
+        <col id="1" translatable="yes">other</col>
+      </row>
+    </data>
+  </object>
   <object class="GtkTextBuffer" id="textbufferOnTheFly">
     <property name="text" translatable="yes">Put some logs here</property>
   </object>
@@ -27,7 +86,7 @@ Summary of the test:
   <object class="GtkAssistant" id="mainform">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Scanner information collector</property>
-    <property name="default_width">640</property>
+    <property name="default_width">840</property>
     <property name="default_height">480</property>
     <property name="icon_name">insert-image</property>
     <property name="use_header_bar">1</property>
@@ -84,9 +143,8 @@ This program is designed to collect as much information as possible regarding yo
                         <property name="margin_right">10</property>
                         <property name="row_homogeneous">True</property>
                         <child>
-                          <object class="GtkLabel">
+                          <object class="GtkLabel" id="labelUserName">
                             <property name="visible">True</property>
-                            <property name="sensitive">False</property>
                             <property name="can_focus">False</property>
                             <property name="label" translatable="yes">Name</property>
                             <property name="width_chars">15</property>
@@ -97,11 +155,12 @@ This program is designed to collect as much information as possible regarding yo
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton">
+                          <object class="GtkCheckButton" id="checkboxAcceptContact">
                             <property name="label" translatable="yes">I accept to be contacted back later for further testing</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="active">True</property>
                             <property name="draw_indicator">True</property>
                           </object>
                           <packing>
@@ -120,9 +179,8 @@ This program is designed to collect as much information as possible regarding yo
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkEntry">
+                          <object class="GtkEntry" id="entryUserName">
                             <property name="visible">True</property>
-                            <property name="sensitive">False</property>
                             <property name="can_focus">True</property>
                             <property name="hexpand">True</property>
                           </object>
@@ -132,9 +190,8 @@ This program is designed to collect as much information as possible regarding yo
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel">
+                          <object class="GtkLabel" id="labelUserEmail">
                             <property name="visible">True</property>
-                            <property name="sensitive">False</property>
                             <property name="can_focus">False</property>
                             <property name="label" translatable="yes">Email</property>
                             <property name="width_chars">15</property>
@@ -145,9 +202,8 @@ This program is designed to collect as much information as possible regarding yo
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkEntry">
+                          <object class="GtkEntry" id="entryUserEmail">
                             <property name="visible">True</property>
-                            <property name="sensitive">False</property>
                             <property name="can_focus">True</property>
                             <property name="hexpand">True</property>
                           </object>
@@ -186,7 +242,6 @@ This program is designed to collect as much information as possible regarding yo
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="hexpand">True</property>
-                            <property name="row_homogeneous">True</property>
                             <child>
                               <object class="GtkLabel">
                                 <property name="visible">True</property>
@@ -201,11 +256,20 @@ This program is designed to collect as much information as possible regarding yo
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkComboBox">
+                              <object class="GtkComboBox" id="comboboxDevices">
                                 <property name="visible">True</property>
                                 <property name="sensitive">False</property>
                                 <property name="can_focus">False</property>
                                 <property name="hexpand">True</property>
+                                <property name="model">liststoreLoading</property>
+                                <property name="active">0</property>
+                                <property name="id_column">1</property>
+                                <child>
+                                  <object class="GtkCellRendererText"/>
+                                  <attributes>
+                                    <attribute name="text">0</attribute>
+                                  </attributes>
+                                </child>
                               </object>
                               <packing>
                                 <property name="left_attach">1</property>
@@ -213,10 +277,19 @@ This program is designed to collect as much information as possible regarding yo
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkComboBox">
+                              <object class="GtkComboBox" id="comboboxResolutions">
                                 <property name="visible">True</property>
                                 <property name="sensitive">False</property>
                                 <property name="can_focus">False</property>
+                                <property name="model">liststoreLoading</property>
+                                <property name="active">0</property>
+                                <property name="id_column">1</property>
+                                <child>
+                                  <object class="GtkCellRendererText"/>
+                                  <attributes>
+                                    <attribute name="text">0</attribute>
+                                  </attributes>
+                                </child>
                               </object>
                               <packing>
                                 <property name="left_attach">1</property>
@@ -234,18 +307,6 @@ This program is designed to collect as much information as possible regarding yo
                               <packing>
                                 <property name="left_attach">0</property>
                                 <property name="top_attach">3</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkListBox">
-                                <property name="visible">True</property>
-                                <property name="sensitive">False</property>
-                                <property name="can_focus">False</property>
-                                <property name="hexpand">True</property>
-                              </object>
-                              <packing>
-                                <property name="left_attach">1</property>
-                                <property name="top_attach">2</property>
                               </packing>
                             </child>
                             <child>
@@ -274,10 +335,19 @@ This program is designed to collect as much information as possible regarding yo
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkComboBox">
+                              <object class="GtkComboBox" id="comboboxModes">
                                 <property name="visible">True</property>
                                 <property name="sensitive">False</property>
                                 <property name="can_focus">False</property>
+                                <property name="model">liststoreLoading</property>
+                                <property name="active">0</property>
+                                <property name="id_column">1</property>
+                                <child>
+                                  <object class="GtkCellRendererText"/>
+                                  <attributes>
+                                    <attribute name="text">0</attribute>
+                                  </attributes>
+                                </child>
                               </object>
                               <packing>
                                 <property name="left_attach">1</property>
@@ -297,14 +367,48 @@ This program is designed to collect as much information as possible regarding yo
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkComboBox">
+                              <object class="GtkComboBox" id="comboboxScannerTypes">
                                 <property name="visible">True</property>
-                                <property name="sensitive">False</property>
                                 <property name="can_focus">False</property>
+                                <property name="model">liststoreScannerTypes</property>
+                                <property name="active">0</property>
+                                <property name="id_column">1</property>
+                                <child>
+                                  <object class="GtkCellRendererText"/>
+                                  <attributes>
+                                    <attribute name="text">0</attribute>
+                                  </attributes>
+                                </child>
                               </object>
                               <packing>
                                 <property name="left_attach">1</property>
                                 <property name="top_attach">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkScrolledWindow">
+                                <property name="height_request">100</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="shadow_type">in</property>
+                                <child>
+                                  <object class="GtkViewport">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <child>
+                                      <object class="GtkListBox" id="listboxSources">
+                                        <property name="visible">True</property>
+                                        <property name="sensitive">False</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="hexpand">True</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="top_attach">2</property>
                               </packing>
                             </child>
                           </object>
@@ -350,7 +454,6 @@ This program is designed to collect as much information as possible regarding yo
       </object>
       <packing>
         <property name="title" translatable="yes">Test parameters</property>
-        <property name="complete">True</property>
         <property name="has_padding">False</property>
       </packing>
     </child>
@@ -497,10 +600,13 @@ Do not scan anything you do not want made public !</property>
               </packing>
             </child>
             <child>
-              <object class="GtkImage">
+              <object class="GtkScrolledWindow">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="stock">gtk-execute</property>
+                <property name="can_focus">True</property>
+                <property name="shadow_type">in</property>
+                <child>
+                  <placeholder/>
+                </child>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -530,7 +636,6 @@ Do not scan anything you do not want made public !</property>
       <packing>
         <property name="page_type">progress</property>
         <property name="title" translatable="yes">Let's scan !</property>
-        <property name="complete">True</property>
         <property name="has_padding">False</property>
       </packing>
     </child>
@@ -570,7 +675,7 @@ Do not scan anything you do not want made public !</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="entryPicture">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="placeholder_text" translatable="yes">A picture is worth a thousand words</property>
@@ -582,7 +687,7 @@ Do not scan anything you do not want made public !</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton">
+                  <object class="GtkButton" id="buttonSelectPicture">
                     <property name="label">gtk-open</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -637,7 +742,7 @@ Do not scan anything you do not want made public !</property>
                 <property name="can_focus">True</property>
                 <property name="shadow_type">in</property>
                 <child>
-                  <object class="GtkTextView">
+                  <object class="GtkTextView" id="textviewComment">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="input_hints">GTK_INPUT_HINT_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
@@ -715,7 +820,7 @@ Ready to send the results to Openpaper.work.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkProgressBar">
+          <object class="GtkProgressBar" id="progressSendingResults">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
           </object>
@@ -728,7 +833,6 @@ Ready to send the results to Openpaper.work.</property>
       </object>
       <packing>
         <property name="title" translatable="yes">Sending results</property>
-        <property name="complete">True</property>
         <property name="has_padding">False</property>
       </packing>
     </child>
@@ -770,7 +874,7 @@ Ready to send the results to Openpaper.work.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLinkButton">
+          <object class="GtkLinkButton" id="linkbuttonOpenReport">
             <property name="label" translatable="yes">button</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
