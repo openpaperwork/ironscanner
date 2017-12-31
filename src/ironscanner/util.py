@@ -8,6 +8,7 @@ import sys
 
 import pkg_resources
 
+from gi.repository import GdkPixbuf
 from gi.repository import Gtk
 
 
@@ -43,6 +44,11 @@ def _get_resource_path(filename, pkg="ironscanner"):
 
     logger.debug("For filename '%s' got file '%s'", filename, path)
     return path
+
+
+def load_pixbuf(filename):
+    img_file = _get_resource_path(filename)
+    return GdkPixbuf.Pixbuf.new_from_file(img_file)
 
 
 def load_uifile(filename):

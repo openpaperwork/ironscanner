@@ -84,6 +84,7 @@ def main():
         ReportSender(widget_tree)
 
         mainform = widget_tree.get_object("mainform")
+        mainform.set_icon(util.load_pixbuf("logo.png"))
         mainform.connect("close", lambda w: main_loop.quit())
         mainform.connect("escape", lambda w: main_loop.quit())
         mainform.connect("cancel", lambda w: main_loop.quit())
