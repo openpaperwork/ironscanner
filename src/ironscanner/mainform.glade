@@ -2,7 +2,14 @@
 <!-- Generated with glade 3.20.2 -->
 <interface>
   <requires lib="gtk+" version="3.14"/>
-  <object class="GtkListStore" id="liststoreDevices"/>
+  <object class="GtkListStore" id="liststoreDevices">
+    <columns>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name devid -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkListStore" id="liststoreLoading">
     <columns>
       <!-- column-name loading -->
@@ -112,7 +119,7 @@ This program is designed to collect as much information as possible regarding yo
       </packing>
     </child>
     <child>
-      <object class="GtkScrolledWindow">
+      <object class="GtkScrolledWindow" id="pageTestSettings">
         <property name="visible">True</property>
         <property name="can_focus">True</property>
         <property name="margin_left">20</property>
@@ -969,6 +976,9 @@ Ready to send the results to Openpaper.work.</property>
         <property name="complete">True</property>
         <property name="has_padding">False</property>
       </packing>
+    </child>
+    <child>
+      <placeholder/>
     </child>
     <child>
       <placeholder/>

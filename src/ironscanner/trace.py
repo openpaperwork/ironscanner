@@ -22,11 +22,18 @@ class TraceThread(threading.Thread):
         self.args = args
         self.kwargs = kwargs
         self.end_func = end_func
+        self.ret = None
+        self.exc = None
 
     def run(self):
         sys.settrace(_trace)
         try:
-            self.func(*self.args, **self.kwargs)
+            self.ret = self.func(*self.args, **self.kwargs)
+        except Exception as exc:
+            self.exc = exc
+            sys.settrace(None)
+            logger.error("Exception while calling {}".format(str(self.func)),
+                         exc_info=exc)
         finally:
             sys.settrace(None)
             self.end_func()
@@ -55,6 +62,10 @@ def trace(func, *args, **kwargs):
                     str(func), trace_timeout
                 )
             )
+
+    if thread.exc is not None:
+        raise thread.exc
+    return thread.ret
 
 
 if __name__ == "__main__":
