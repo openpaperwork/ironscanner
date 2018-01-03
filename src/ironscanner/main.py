@@ -3,6 +3,8 @@
 import logging
 import multiprocessing
 import os
+import platform
+import sys
 import threading
 
 import gi
@@ -11,6 +13,7 @@ from gi.repository import GdkPixbuf
 from gi.repository import GLib
 from gi.repository import Gtk
 
+import psutil
 import pyinsane2
 
 from . import dummy
@@ -258,30 +261,48 @@ class ScannerSettings(object):
 
 
 class SysInfo(object):
+    def get_info(self):
+        return {
+            'sys_arch': platform.architecture(),
+            'sys_cpu_freq': int(psutil.cpu_freq().max),
+            'sys_machine': platform.machine(),
+            'sys_mem': int(psutil.virtual_memory().total),
+            'sys_nb_cpus': multiprocessing.cpu_count(),
+            'sys_os_uname': os.uname(),
+            'sys_platform': platform.platform(),
+            'sys_platform': sys.platform,
+            'sys_platform_uname': platform.uname(),
+            'sys_proc': platform.processor(),
+            'sys_python': sys.version,
+            'sys_release': platform.release(),
+            'sys_swap': int(psutil.swap_memory().total),
+            'sys_system': platform.system(),
+            'sys_type': os.name,
+        }
+
     def get_user_info(self):
         return {
-            # TODO: more
-            'sys_type': os.name,
-            'sys_proc': multiprocessing.cpu_count(),
+            "sys": "- " + "\n- ".join(
+                ["{}: {}".format(k[4:], v) for (k, v) in self.get_info().items()]
+            )
         }
 
 
 class TestSummary(object):
     TEMPLATE = """
-Personal information that will be attached to the report:
-- Name: {user_name}
-- Email: {user_email}
-
-System informations:
-- OS type: {sys_type}
-- Processors: {sys_proc}
-
 Summary of the test:
 - Scanner: {dev_name}
 - Type: {dev_type}
 - Source: {dev_source}
 - Resolutions: {dev_resolution}
 - Mode: {dev_mode}
+
+Personal information that will be attached to the report:
+- Name: {user_name}
+- Email: {user_email}
+
+System informations that will be attached to the report:
+{sys}
     """
 
     def __init__(self, widget_tree, sources):

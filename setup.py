@@ -56,5 +56,6 @@ setup(
     install_requires=[
         "Pillow",
         "pyinsane2",
+        "psutil",
     ]
 )
