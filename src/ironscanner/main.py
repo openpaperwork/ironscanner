@@ -86,6 +86,11 @@ class ScannerSettings(object):
         ScannerFinder(self._on_scanners_get).start()
 
     def _on_scanners_get(self, scanners):
+        self.widget_tree.get_object("mainform").set_page_complete(
+            self.widget_tree.get_object("pageTestSettings"),
+            True
+        )
+
         liststore = self.widget_tree.get_object("liststoreDevices")
         for scanner in scanners:
             username = "{} {} ({})".format(
@@ -98,11 +103,6 @@ class ScannerSettings(object):
         combobox.set_model(liststore)
         combobox.set_sensitive(True)
         combobox.set_active(0)
-
-        self.widget_tree.get_object("mainform").set_page_complete(
-            self.widget_tree.get_object("pageTestSettings"),
-            True
-        )
 
     @staticmethod
     def _get_resolutions(resolutions):
@@ -118,7 +118,7 @@ class ScannerSettings(object):
         return range(resolutions[0], resolutions[1] + 1, interval)
 
     def _on_scanner_selected(self, combobox):
-        scanner = self.get_scanner(configure=False)
+        scanner = self.get_scanner()
 
         logger.info("Selected scanner: {}".format(scanner.name))
 
@@ -193,29 +193,69 @@ class ScannerSettings(object):
                                          GdkPixbuf.InterpType.BILINEAR)
             img_widget.set_from_pixbuf(pixbuf)
 
-    def get_scanner(self, configure=True):
+    def get_scanner(self):
         liststore = self.widget_tree.get_object("liststoreDevices")
         active = self.widget_tree.get_object("comboboxDevices").get_active()
-        if active < len(liststore):
+        if active < 0 or active >= len(liststore):
             return dummy.DummyScanner()
         devid = liststore[active][1]
         scanner = self.scanners[devid]
-        if not configure:
-            return scanner
-        # TODO: configure scanner
         return scanner
 
+    def configure_scanner(self, scanner):
+        trace.trace(
+            setattr, scanner.options['source'], 'value',
+            self.widget_tree.get_object('liststoreSources')[
+                self.widget_tree.get_object('comboboxSources').get_active()
+            ][1]
+        )
+        trace.trace(
+            setattr, scanner.options['resolution'], 'value',
+            self.widget_tree.get_object('liststoreResolutions')[
+                self.widget_tree.get_object('comboboxResolutions').get_active()
+            ][1]
+        )
+        trace.trace(
+            setattr, scanner.options['mode'], 'value',
+            self.widget_tree.get_object('liststoreModes')[
+                self.widget_tree.get_object('comboboxModes').get_active()
+            ][1]
+        )
+
     def get_user_info(self):
-        scanner = self.get_scanner()
+        active = self.widget_tree.get_object("comboboxDevices").get_active()
+        liststore = self.widget_tree.get_object("liststoreDevices")
+        if active < 0 or active >= len(liststore):
+            scanner = dummy.DummyScanner()
+            src = "None"
+            resolution = 0
+            mode = "None"
+            dev_type = "None"
+        else:
+            scanner = self.get_scanner()
+            src = self.widget_tree.get_object('liststoreSources')[
+                self.widget_tree.get_object('comboboxSources').get_active()
+            ][1]
+            resolution = self.widget_tree.get_object('liststoreResolutions')[
+                self.widget_tree.get_object('comboboxResolutions').get_active()
+            ][1]
+            mode = self.widget_tree.get_object('liststoreModes')[
+                self.widget_tree.get_object('comboboxModes').get_active()
+            ][1]
+            dev_type = self.widget_tree.get_object('liststoreScannerTypes')[
+                self.widget_tree.get_object('comboboxScannerTypes').get_active()
+            ][1]
         info = {
             "dev_name": "{} {} ({})".format(
                 scanner.vendor, scanner.model, scanner.nice_name
             ),
-            "dev_source": scanner.options['source'].value,
-            "dev_resolution": scanner.options['resolution'].value,
-            "dev_mode": scanner.options['mode'].value,
+            "dev_source": src,
+            "dev_resolution": resolution,
+            "dev_mode": mode,
+            "dev_type": dev_type,
         }
         return info
+
 
 class SysInfo(object):
     def get_user_info(self):
@@ -225,6 +265,7 @@ class SysInfo(object):
             'sys_proc': multiprocessing.cpu_count(),
         }
 
+
 class TestSummary(object):
     TEMPLATE = """
 Personal information that will be attached to the report:
@@ -233,10 +274,11 @@ Personal information that will be attached to the report:
 
 System informations:
 - OS type: {sys_type}
-- Processor: {sys_proc}
+- Processors: {sys_proc}
 
 Summary of the test:
 - Scanner: {dev_name}
+- Type: {dev_type}
 - Source: {dev_source}
 - Resolutions: {dev_resolution}
 - Mode: {dev_mode}
@@ -262,6 +304,7 @@ Summary of the test:
         summary.set_text(content)
         logger.info("Summary ready")
         logger.info(content)
+
 
 class ScanTest(object):
     def __init__(self, widget_tree):
@@ -329,8 +372,11 @@ def main():
         application.register()
 
         main_loop.run()
+        logger.info("Quitting")
     finally:
+        logger.info("Exiting Pyinsane2")
         pyinsane2.exit()
+    logger.info("Good bye")
 
 
 if __name__ == "__main__":

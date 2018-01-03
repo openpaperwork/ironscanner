@@ -110,18 +110,7 @@ Pouet
 Pouet
 Done.</property>
   </object>
-  <object class="GtkTextBuffer" id="textbufferSummary">
-    <property name="text" translatable="yes">Personal information that will be attached to the report:
-- Name: Jerome Flesch
-- Email: jflesch@openpaper.work
-
-Summary of the test:
-- Scanner: kwainkwain
-- Sources: Flatbed, ADF
-- Resolutions: 300
-- Mode: Color
-</property>
-  </object>
+  <object class="GtkTextBuffer" id="textbufferSummary"/>
   <object class="GtkAssistant" id="mainform">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Scanner information collector</property>
@@ -1003,6 +992,9 @@ Ready to send the results to Openpaper.work.</property>
         <property name="complete">True</property>
         <property name="has_padding">False</property>
       </packing>
+    </child>
+    <child>
+      <placeholder/>
     </child>
     <child>
       <placeholder/>
