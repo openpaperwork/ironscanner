@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import logging
+import multiprocessing
+import os
 import threading
 
 import gi
@@ -11,6 +13,7 @@ from gi.repository import Gtk
 
 import pyinsane2
 
+from . import dummy
 from . import log
 from . import trace
 from . import util
@@ -20,7 +23,6 @@ logger = logging.getLogger(__name__)
 
 
 g_log_tracker = log.LogTracker()
-g_scanners = {}
 
 
 class ScannerFinder(threading.Thread):
@@ -35,26 +37,12 @@ class ScannerFinder(threading.Thread):
         GLib.idle_add(self.cb, scanners)
 
 
-class TestSettings(object):
+class PersonalInfo(object):
     def __init__(self, widget_tree):
         self.widget_tree = widget_tree
         widget_tree.get_object("checkboxAcceptContact").connect(
             "toggled", self._on_accept_contact_changed
         )
-        widget_tree.get_object("mainform").connect(
-            "prepare", self._on_assistant_page_prepare
-        )
-        widget_tree.get_object("comboboxDevices").connect(
-            "changed", self._on_scanner_selected
-        )
-        widget_tree.get_object("comboboxScannerTypes").connect(
-            "changed", self._on_scanner_type_selected
-        )
-
-    def _on_assistant_page_prepare(self, assistant, page):
-        if page is not self.widget_tree.get_object("pageTestSettings"):
-            return
-        ScannerFinder(self._on_scanners_get).start()
 
     def _on_accept_contact_changed(self, button):
         widgets = [
@@ -64,7 +52,38 @@ class TestSettings(object):
             self.widget_tree.get_object("entryUserEmail"),
         ]
         for widget in widgets:
-            widget.set_sensitive(not widget.get_sensitive())
+            sensitive = not widget.get_sensitive()
+            widget.set_sensitive(sensitive)
+            if not sensitive:
+                widget.set_text("")
+
+    def get_user_info(self):
+        return {
+            "user_name":
+            self.widget_tree.get_object("entryUserName").get_text(),
+            "user_email":
+            self.widget_tree.get_object("entryUserEmail").get_text(),
+        }
+
+
+class ScannerSettings(object):
+    def __init__(self, widget_tree):
+        self.widget_tree = widget_tree
+        widget_tree.get_object("mainform").connect(
+            "prepare", self._on_assistant_page_prepare
+        )
+        widget_tree.get_object("comboboxDevices").connect(
+            "changed", self._on_scanner_selected
+        )
+        widget_tree.get_object("comboboxScannerTypes").connect(
+            "changed", self._on_scanner_type_selected
+        )
+        self.scanners = {}
+
+    def _on_assistant_page_prepare(self, assistant, page):
+        if page is not self.widget_tree.get_object("pageTestSettings"):
+            return
+        ScannerFinder(self._on_scanners_get).start()
 
     def _on_scanners_get(self, scanners):
         liststore = self.widget_tree.get_object("liststoreDevices")
@@ -72,7 +91,7 @@ class TestSettings(object):
             username = "{} {} ({})".format(
                 scanner.vendor, scanner.model, scanner.nice_name
             )
-            g_scanners[scanner.name] = scanner
+            self.scanners[scanner.name] = scanner
             logger.info("{} -> {}".format(scanner.name, username))
             liststore.append((username, scanner.name))
         combobox = self.widget_tree.get_object("comboboxDevices")
@@ -99,7 +118,7 @@ class TestSettings(object):
         return range(resolutions[0], resolutions[1] + 1, interval)
 
     def _on_scanner_selected(self, combobox):
-        scanner = self.get_scanner()
+        scanner = self.get_scanner(configure=False)
 
         logger.info("Selected scanner: {}".format(scanner.name))
 
@@ -174,23 +193,75 @@ class TestSettings(object):
                                          GdkPixbuf.InterpType.BILINEAR)
             img_widget.set_from_pixbuf(pixbuf)
 
-    def get_scanner(self):
+    def get_scanner(self, configure=True):
         liststore = self.widget_tree.get_object("liststoreDevices")
-        devid = liststore[
-            self.widget_tree.get_object("comboboxDevices").get_active()
-        ][1]
-        return g_scanners[devid]
+        active = self.widget_tree.get_object("comboboxDevices").get_active()
+        if active < len(liststore):
+            return dummy.DummyScanner()
+        devid = liststore[active][1]
+        scanner = self.scanners[devid]
+        if not configure:
+            return scanner
+        # TODO: configure scanner
+        return scanner
 
+    def get_user_info(self):
+        scanner = self.get_scanner()
+        info = {
+            "dev_name": "{} {} ({})".format(
+                scanner.vendor, scanner.model, scanner.nice_name
+            ),
+            "dev_source": scanner.options['source'].value,
+            "dev_resolution": scanner.options['resolution'].value,
+            "dev_mode": scanner.options['mode'].value,
+        }
+        return info
 
-class ScannerSettings(object):
-    def __init__(self, widget_tree):
+class SysInfo(object):
+    def get_user_info(self):
+        return {
+            # TODO: more
+            'sys_type': os.name,
+            'sys_proc': multiprocessing.cpu_count(),
+        }
+
+class TestSummary(object):
+    TEMPLATE = """
+Personal information that will be attached to the report:
+- Name: {user_name}
+- Email: {user_email}
+
+System informations:
+- OS type: {sys_type}
+- Processor: {sys_proc}
+
+Summary of the test:
+- Scanner: {dev_name}
+- Source: {dev_source}
+- Resolutions: {dev_resolution}
+- Mode: {dev_mode}
+    """
+
+    def __init__(self, widget_tree, sources):
         self.widget_tree = widget_tree
+        self.sources = sources
 
+        widget_tree.get_object("mainform").connect(
+            "prepare", self._on_assistant_page_prepare
+        )
 
-class TestPresentation(object):
-    def __init__(self, widget_tree):
-        self.widget_tree = widget_tree
-
+    def _on_assistant_page_prepare(self, assistant, page):
+        if page is not self.widget_tree.get_object("pageSummary"):
+            return
+        logger.info("Preparing summary")
+        values = {}
+        for src in self.sources:
+            values.update(src.get_user_info())
+        content = self.TEMPLATE.format(**values).strip()
+        summary = self.widget_tree.get_object("textbufferSummary")
+        summary.set_text(content)
+        logger.info("Summary ready")
+        logger.info(content)
 
 class ScanTest(object):
     def __init__(self, widget_tree):
@@ -246,9 +317,10 @@ def main():
         widget_tree = util.load_uifile("mainform.glade")
 
         MainForm(application, main_loop, widget_tree)
-        TestSettings(widget_tree)
-        ScannerSettings(widget_tree)
-        TestPresentation(widget_tree)
+        user_info = PersonalInfo(widget_tree)
+        scan_settings = ScannerSettings(widget_tree)
+        sys_info = SysInfo()
+        TestSummary(widget_tree, [user_info, scan_settings, sys_info])
         ScanTest(widget_tree)
         PhotoSelector(widget_tree)
         UserComment(widget_tree)

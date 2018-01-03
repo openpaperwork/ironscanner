@@ -492,7 +492,7 @@ This program is designed to collect as much information as possible regarding yo
       </packing>
     </child>
     <child>
-      <object class="GtkBox">
+      <object class="GtkBox" id="pageSummary">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="margin_left">20</property>
@@ -1003,6 +1003,9 @@ Ready to send the results to Openpaper.work.</property>
         <property name="complete">True</property>
         <property name="has_padding">False</property>
       </packing>
+    </child>
+    <child>
+      <placeholder/>
     </child>
     <child>
       <placeholder/>
