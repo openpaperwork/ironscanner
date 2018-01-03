@@ -24,49 +24,81 @@
       </row>
     </data>
   </object>
-  <object class="GtkListStore" id="liststoreModes"/>
-  <object class="GtkListStore" id="liststoreResolutions"/>
+  <object class="GtkListStore" id="liststoreModes">
+    <columns>
+      <!-- column-name username -->
+      <column type="gchararray"/>
+      <!-- column-name mode -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="liststoreResolutions">
+    <columns>
+      <!-- column-name username -->
+      <column type="gchararray"/>
+      <!-- column-name resolution -->
+      <column type="gint"/>
+    </columns>
+  </object>
   <object class="GtkListStore" id="liststoreScannerTypes">
     <columns>
       <!-- column-name typeStr -->
       <column type="gchararray"/>
       <!-- column-name typeId -->
       <column type="gchararray"/>
+      <!-- column-name imageFile -->
+      <column type="gchararray"/>
     </columns>
     <data>
       <row>
         <col id="0" translatable="yes">Flatbed</col>
         <col id="1" translatable="yes">flatbed</col>
+        <col id="2" translatable="yes">flatbed.png</col>
       </row>
       <row>
         <col id="0" translatable="yes">Flatbed + Automatic Feeder</col>
         <col id="1" translatable="yes">flatbed_adf</col>
+        <col id="2" translatable="yes">flatbed_and_feeder.png</col>
       </row>
       <row>
         <col id="0" translatable="yes">Flatbed + Duplex Automatic Document Feeder</col>
         <col id="1" translatable="yes">flatbed_adf_duplex</col>
+        <col id="2" translatable="yes">flatbed_and_feeder.png</col>
       </row>
       <row>
         <col id="0" translatable="yes">Automatic Document Feeder</col>
         <col id="1" translatable="yes">adf</col>
+        <col id="2" translatable="yes"/>
       </row>
       <row>
         <col id="0" translatable="yes">Duplex Automatic Document Feeder</col>
         <col id="1" translatable="yes">adf_duplex</col>
+        <col id="2" translatable="yes"/>
       </row>
       <row>
         <col id="0" translatable="yes">Handheld scanner</col>
         <col id="1" translatable="yes">handheld</col>
+        <col id="2" translatable="yes">handheld.png</col>
       </row>
       <row>
         <col id="0" translatable="yes">Portable scanner</col>
         <col id="1" translatable="yes">portable</col>
+        <col id="2" translatable="yes">portable.png</col>
       </row>
       <row>
         <col id="0" translatable="yes">Other</col>
         <col id="1" translatable="yes">other</col>
+        <col id="2" translatable="yes"/>
       </row>
     </data>
+  </object>
+  <object class="GtkListStore" id="liststoreSources">
+    <columns>
+      <!-- column-name username -->
+      <column type="gchararray"/>
+      <!-- column-name sourceid -->
+      <column type="gchararray"/>
+    </columns>
   </object>
   <object class="GtkTextBuffer" id="textbufferOnTheFly">
     <property name="text" translatable="yes">Put some logs here</property>
@@ -376,8 +408,9 @@ This program is designed to collect as much information as possible regarding yo
                             <child>
                               <object class="GtkComboBox" id="comboboxScannerTypes">
                                 <property name="visible">True</property>
+                                <property name="sensitive">False</property>
                                 <property name="can_focus">False</property>
-                                <property name="model">liststoreScannerTypes</property>
+                                <property name="model">liststoreLoading</property>
                                 <property name="active">0</property>
                                 <property name="id_column">1</property>
                                 <child>
@@ -393,24 +426,18 @@ This program is designed to collect as much information as possible regarding yo
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkScrolledWindow">
-                                <property name="height_request">100</property>
+                              <object class="GtkComboBox" id="comboboxSources">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="shadow_type">in</property>
+                                <property name="sensitive">False</property>
+                                <property name="can_focus">False</property>
+                                <property name="model">liststoreLoading</property>
+                                <property name="active">0</property>
+                                <property name="id_column">1</property>
                                 <child>
-                                  <object class="GtkViewport">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
-                                    <child>
-                                      <object class="GtkListBox" id="listboxSources">
-                                        <property name="visible">True</property>
-                                        <property name="sensitive">False</property>
-                                        <property name="can_focus">False</property>
-                                        <property name="hexpand">True</property>
-                                      </object>
-                                    </child>
-                                  </object>
+                                  <object class="GtkCellRendererText"/>
+                                  <attributes>
+                                    <attribute name="text">0</attribute>
+                                  </attributes>
                                 </child>
                               </object>
                               <packing>
@@ -426,7 +453,7 @@ This program is designed to collect as much information as possible regarding yo
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkImage">
+                          <object class="GtkImage" id="imageScanner">
                             <property name="width_request">192</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
@@ -976,6 +1003,12 @@ Ready to send the results to Openpaper.work.</property>
         <property name="complete">True</property>
         <property name="has_padding">False</property>
       </packing>
+    </child>
+    <child>
+      <placeholder/>
+    </child>
+    <child>
+      <placeholder/>
     </child>
     <child>
       <placeholder/>
