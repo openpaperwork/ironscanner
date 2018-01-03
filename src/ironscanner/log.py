@@ -20,7 +20,7 @@ class LogTracker(logging.Handler):
     def __init__(self):
         super(LogTracker, self).__init__()
         self._formatter = logging.Formatter(
-            '%(levelname)-6s %(name)-30s %(message)s'
+            '%(levelname)-6s %(name)-10s %(message)s'
         )
         self.output = []
 

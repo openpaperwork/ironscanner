@@ -7,14 +7,6 @@ import threading
 logger = logging.getLogger(__name__)
 
 
-def _trace(frame, event, arg):
-    if event == "call":
-        filename = frame.f_code.co_filename
-        lineno = frame.f_lineno
-        logger.debug("%s:%s() @ %s" % (filename, frame.f_code.co_name, lineno))
-    return _trace
-
-
 class TraceThread(threading.Thread):
     def __init__(self, func, args, kwargs, end_func):
         super().__init__(name="TraceThread({})".format(str(func)))
@@ -24,9 +16,32 @@ class TraceThread(threading.Thread):
         self.end_func = end_func
         self.ret = None
         self.exc = None
+        self.depth = 0
+        self.ignore = 0
+
+    def _trace(self, frame, event, arg):
+        filename = frame.f_code.co_filename
+        if event == "call":
+            if "/logging/" in filename:
+                self.ignore += 1
+            elif self.ignore > 0:
+                pass
+            else:
+                lineno = frame.f_lineno
+                logger.debug("%s%s:%s()@%d[%s]",
+                    "  " * self.depth,
+                    filename, frame.f_code.co_name, lineno,
+                    threading.current_thread().name
+                )
+            self.depth += 1
+        elif event == "return":
+            if "/logging/" in filename:
+                self.ignore -= 1
+            self.depth -= 1
+        return self._trace
 
     def run(self):
-        sys.settrace(_trace)
+        sys.settrace(self._trace)
         try:
             self.ret = self.func(*self.args, **self.kwargs)
         except Exception as exc:

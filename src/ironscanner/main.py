@@ -235,7 +235,7 @@ def main():
     g_log_tracker.init()
 
     logger.info("Initializing pyinsane2 ...")
-    pyinsane2.init()
+    trace.trace(pyinsane2.init)
     logger.info("Pyinsane2 ready")
 
     try:
