@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import itertools
 import logging
 import multiprocessing
 import os
@@ -214,25 +215,18 @@ class ScannerSettings(object):
         scanner = self.scanners[devid]
         return scanner
 
-    def configure_scanner(self, scanner):
-        trace.trace(
-            setattr, scanner.options['source'], 'value',
-            self.widget_tree.get_object('liststoreSources')[
+    def get_scanner_config(self):
+        return {
+            'source': self.widget_tree.get_object('liststoreSources')[
                 self.widget_tree.get_object('comboboxSources').get_active()
-            ][1]
-        )
-        trace.trace(
-            setattr, scanner.options['resolution'], 'value',
-            self.widget_tree.get_object('liststoreResolutions')[
+            ][1],
+            'resolution': self.widget_tree.get_object('liststoreResolutions')[
                 self.widget_tree.get_object('comboboxResolutions').get_active()
-            ][1]
-        )
-        trace.trace(
-            setattr, scanner.options['mode'], 'value',
-            self.widget_tree.get_object('liststoreModes')[
+            ][1],
+            'mode': self.widget_tree.get_object('liststoreModes')[
                 self.widget_tree.get_object('comboboxModes').get_active()
-            ][1]
-        )
+            ][1],
+        }
 
     def get_user_info(self):
         active = self.widget_tree.get_object("comboboxDevices").get_active()
@@ -336,9 +330,103 @@ System informations that will be attached to the report:
         logger.info(content)
 
 
+class ScanThread(threading.Thread):
+    def __init__(self, scanner, settings, result_cb):
+        super().__init__(name="Test scan thread")
+        self.scanner = scanner
+        self.settings = settings
+        self.result_cb = result_cb
+
+    def run(self):
+        try:
+            logger.info("### SCAN TEST ###")
+            for (k, v) in self.settings.items():
+                logger.info("Configuring scanner: {} = {}".format(k, v))
+                trace.trace(pyinsane2.set_scanner_opt, self.scanner, k, [v])
+            logger.info("Maximizing scan area ...")
+            trace.trace(pyinsane2.maximize_scan_area, self.scanner)
+
+            logger.info("Starting scan session ...")
+            # we set multiple = True, pyinsane will take care of switching
+            # it back to False if required
+            scan_session = trace.trace(self.scanner.scan, multiple=True)
+            try:
+                page_nb = 0
+                while True:
+                    logger.info("Scanning page {}".format(page_nb))
+                    try:
+                        while True:
+                            trace.trace(scan_session.scan.read)
+                            logger.info("Available lines: {}".format(
+                                scan_session.scan.available_lines
+                            ))
+                            # TODO: Image
+                    except EOFError:
+                        logger.info("End of page. Available lines: {}".format(
+                            scan_session.scan.available_lines
+                        ))
+                        page_nb += 1
+                    # TODO: Image
+            except StopIteration:
+                logger.info("Got StopIteration")
+            logger.info("Scanned {} images".format(len(scan_session.images)))
+            logger.info("### SCAN TEST SUCCESSFUL ###")
+        except Exception as exc:
+            logger.info("### SCAN TEST FAILED ###", exc_info=exc)
+            GLib.idle_add(self.result_cb)
+            return
+        GLib.idle_add(self.result_cb)
+
+
 class ScanTest(object):
-    def __init__(self, widget_tree):
+    def __init__(self, widget_tree, scanner_settings):
         self.widget_tree = widget_tree
+        self.scanner_settings = scanner_settings
+        widget_tree.get_object("mainform").connect(
+            "prepare", self._on_assistant_page_prepare
+        )
+        self.log_handler = self.LogHandler(widget_tree)
+
+    class LogHandler(logging.Handler):
+        MAX_LINES = 1000
+
+        def __init__(self, widget_tree):
+            super().__init__()
+            self._formatter = logging.Formatter('%(levelname)-6s %(message)s')
+            self.output = []
+            self.buf = widget_tree.get_object("textbufferOnTheFly")
+
+        def emit(self, record):
+            if record.levelno <= logging.DEBUG:
+                return
+            line = self._formatter.format(record)
+            self.output.append(line)
+            if len(self.output) > self.MAX_LINES:
+                self.output.pop(0)
+            GLib.idle_add(self._update_buffer)
+
+        def _update_buffer(self):
+            self.buf.set_text(self.get_logs())
+
+        def get_logs(self):
+            return "\n".join(self.output)
+
+
+    def _on_assistant_page_prepare(self, assistant, page):
+        l = logging.getLogger()
+        if page is not self.widget_tree.get_object("pageTestScan"):
+            l.removeHandler(self.log_handler)
+            return
+        l.addHandler(self.log_handler)
+        scanner = self.scanner_settings.get_scanner()
+        settings = self.scanner_settings.get_scanner_config()
+        ScanThread(scanner, settings, self._on_scan_result).start()
+
+    def _on_scan_result(self):
+        self.widget_tree.get_object("mainform").set_page_complete(
+            self.widget_tree.get_object("pageTestScan"),
+            True
+        )
 
 
 class PhotoSelector(object):
@@ -394,7 +482,7 @@ def main():
         scan_settings = ScannerSettings(widget_tree)
         sys_info = SysInfo()
         TestSummary(widget_tree, [user_info, scan_settings, sys_info])
-        ScanTest(widget_tree)
+        ScanTest(widget_tree, scan_settings)
         PhotoSelector(widget_tree)
         UserComment(widget_tree)
         ReportSender(widget_tree)

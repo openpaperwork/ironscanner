@@ -47,8 +47,12 @@ class TraceThread(threading.Thread):
         except Exception as exc:
             self.exc = exc
             sys.settrace(None)
-            logger.error("Exception while calling {}".format(str(self.func)),
-                         exc_info=exc)
+            if (not isinstance(exc, StopIteration) and
+                    not isinstance(exc, EOFError)):
+                logger.error(
+                    "Exception while calling {}".format(str(self.func)),
+                    exc_info=exc
+                )
         finally:
             sys.settrace(None)
             self.end_func()
