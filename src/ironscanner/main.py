@@ -96,6 +96,7 @@ class ScannerSettings(object):
         )
 
         liststore = self.widget_tree.get_object("liststoreDevices")
+        liststore.clear()
         for scanner in scanners:
             username = "{} {} ({})".format(
                 scanner.vendor, scanner.model, scanner.nice_name
@@ -155,8 +156,11 @@ class ScannerSettings(object):
                             str(exc))
 
         sources = self.widget_tree.get_object("liststoreSources")
+        sources.clear()
         resolutions = self.widget_tree.get_object("liststoreResolutions")
+        resolutions.clear()
         modes = self.widget_tree.get_object("liststoreModes")
+        modes.clear()
 
         for source in scanner.options['source'].constraint:
             sources.append((source, source))
@@ -347,10 +351,10 @@ class ScanThread(threading.Thread):
             trace.trace(pyinsane2.maximize_scan_area, self.scanner)
 
             logger.info("Starting scan session ...")
-            # we set multiple = True, pyinsane will take care of switching
-            # it back to False if required
-            scan_session = trace.trace(self.scanner.scan, multiple=True)
             try:
+                # we set multiple = True, pyinsane will take care of switching
+                # it back to False if required
+                scan_session = trace.trace(self.scanner.scan, multiple=True)
                 page_nb = 0
                 while True:
                     logger.info("Scanning page {}".format(page_nb))
