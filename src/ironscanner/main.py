@@ -109,6 +109,7 @@ class ScannerSettings(object):
 
     @staticmethod
     def _get_resolutions(resolutions):
+        MAX_CHOICES = 30
         # Sometimes sane return the resolutions as a integer array,
         # sometimes as a range (-> tuple). So if it is a range, we turn
         # it into an array
@@ -118,6 +119,14 @@ class ScannerSettings(object):
         interval = resolutions[2]
         if interval < 25:
             interval = 25
+        if (resolutions[1] - resolutions[0]) / interval > MAX_CHOICES:
+            # limit the choices
+            new_interval = int((resolutions[1] - resolutions[0]) / MAX_CHOICES)
+            new_interval -= new_interval % interval
+            logger.info("Resolution interval adjusted: {} --> {}".format(
+                interval, new_interval
+            ))
+            interval = new_interval
         return range(resolutions[0], resolutions[1] + 1, interval)
 
     def _on_scanner_selected(self, combobox):
