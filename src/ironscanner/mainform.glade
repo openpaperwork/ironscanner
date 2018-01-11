@@ -677,24 +677,11 @@ Do not scan anything you do not want made public !</property>
               </packing>
             </child>
             <child>
-              <object class="GtkScrolledWindow">
-                <property name="width_request">300</property>
+              <object class="GtkImage" id="imageOnTheFly">
+                <property name="width_request">200</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="shadow_type">in</property>
-                <child>
-                  <object class="GtkViewport">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <child>
-                      <object class="GtkImage">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="stock">gtk-missing-image</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
+                <property name="can_focus">False</property>
+                <property name="stock">gtk-missing-image</property>
               </object>
               <packing>
                 <property name="expand">False</property>

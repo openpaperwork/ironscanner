@@ -2,6 +2,7 @@
 Various utility functions
 """
 
+import io
 import logging
 import os
 import sys
@@ -68,3 +69,24 @@ def load_uifile(filename):
     ui_file = _get_resource_path(filename)
     widget_tree.add_from_file(ui_file)
     return widget_tree
+
+
+def image2pixbuf(img):
+    """
+    Convert an image object to a gdk pixbuf
+    """
+    if img is None:
+        return None
+    file_desc = io.BytesIO()
+    try:
+        img.save(file_desc, "ppm")
+        contents = file_desc.getvalue()
+    finally:
+        file_desc.close()
+    loader = GdkPixbuf.PixbufLoader.new_with_type("pnm")
+    try:
+        loader.write(contents)
+        pixbuf = loader.get_pixbuf()
+    finally:
+        loader.close()
+    return pixbuf

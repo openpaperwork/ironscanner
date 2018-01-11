@@ -335,11 +335,23 @@ System informations that will be attached to the report:
 
 
 class ScanThread(threading.Thread):
-    def __init__(self, scanner, settings, result_cb):
+    def __init__(self, scanner, settings, image_cb, result_cb):
         super().__init__(name="Test scan thread")
         self.scanner = scanner
         self.settings = settings
+        self.image_cb = image_cb
         self.result_cb = result_cb
+        self.condition = threading.Condition()
+
+    def _upd_image(self, image):
+        with self.condition:
+            self.image_cb(image)
+            self.condition.notify_all()
+
+    def upd_image(self, image):
+        with self.condition:
+            GLib.idle_add(self._upd_image, image)
+            self.condition.wait()
 
     def run(self):
         try:
@@ -364,13 +376,13 @@ class ScanThread(threading.Thread):
                             logger.info("Available lines: {}".format(
                                 scan_session.scan.available_lines
                             ))
-                            # TODO: Image
+                            self.upd_image(scan_session.scan.get_image())
                     except EOFError:
                         logger.info("End of page. Available lines: {}".format(
                             scan_session.scan.available_lines
                         ))
                         page_nb += 1
-                    # TODO: Image
+                        self.upd_image(scan_session.scan.get_image())
             except StopIteration:
                 logger.info("Got StopIteration")
             logger.info("Scanned {} images".format(len(scan_session.images)))
@@ -426,7 +438,20 @@ class ScanTest(object):
         l.addHandler(self.log_handler)
         scanner = self.scanner_settings.get_scanner()
         settings = self.scanner_settings.get_scanner_config()
-        ScanThread(scanner, settings, self._on_scan_result).start()
+        ScanThread(
+            scanner, settings,
+            self._on_scan_image, self._on_scan_result
+        ).start()
+
+    def _on_scan_image(self, image):
+        pixbuf = util.image2pixbuf(image)
+        img_widget = self.widget_tree.get_object("imageOnTheFly")
+        (pw, ph) = (pixbuf.get_width(), pixbuf.get_height())
+        rect = img_widget.get_allocation()
+        ratio = max(pw / rect.width, pw / rect.height)
+        pixbuf = pixbuf.scale_simple(int(pw / ratio), int(ph / ratio),
+                                        GdkPixbuf.InterpType.BILINEAR)
+        img_widget.set_from_pixbuf(pixbuf)
 
     def _on_scan_result(self):
         self.widget_tree.get_object("mainform").set_page_complete(
