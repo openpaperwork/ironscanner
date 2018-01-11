@@ -399,6 +399,8 @@ class ScanTest(object):
             self._formatter = logging.Formatter('%(levelname)-6s %(message)s')
             self.output = []
             self.buf = widget_tree.get_object("textbufferOnTheFly")
+            scrollbars = widget_tree.get_object("scrolledwindowOnTheFly")
+            self.scrollbar = scrollbars.get_vadjustment()
 
         def emit(self, record):
             if record.levelno <= logging.DEBUG:
@@ -411,10 +413,10 @@ class ScanTest(object):
 
         def _update_buffer(self):
             self.buf.set_text(self.get_logs())
+            self.scrollbar.set_value(self.scrollbar.get_upper())
 
         def get_logs(self):
             return "\n".join(self.output)
-
 
     def _on_assistant_page_prepare(self, assistant, page):
         l = logging.getLogger()

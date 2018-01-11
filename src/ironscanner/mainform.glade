@@ -655,7 +655,7 @@ Do not scan anything you do not want made public !</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkScrolledWindow">
+              <object class="GtkScrolledWindow" id="scrolledwindowOnTheFly">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="shadow_type">in</property>
@@ -770,7 +770,6 @@ Do not scan anything you do not want made public !</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
                     <property name="use_stock">True</property>
-                    <property name="active">True</property>
                     <property name="draw_indicator">True</property>
                     <property name="group">radiobuttonScanFailed</property>
                   </object>
@@ -787,7 +786,6 @@ Do not scan anything you do not want made public !</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
                     <property name="use_stock">True</property>
-                    <property name="active">True</property>
                     <property name="draw_indicator">True</property>
                   </object>
                   <packing>
@@ -1057,6 +1055,12 @@ Ready to send the results to Openpaper.work.</property>
         <property name="complete">True</property>
         <property name="has_padding">False</property>
       </packing>
+    </child>
+    <child>
+      <placeholder/>
+    </child>
+    <child>
+      <placeholder/>
     </child>
     <child>
       <placeholder/>
