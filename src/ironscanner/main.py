@@ -108,6 +108,7 @@ class ScannerSettings(object):
         combobox.set_model(liststore)
         combobox.set_sensitive(True)
         combobox.set_active(0)
+        self.widget_tree.get_object("labelDevices").set_sensitive(True)
 
     @staticmethod
     def _get_resolutions(resolutions):
@@ -175,24 +176,29 @@ class ScannerSettings(object):
             (
                 self.widget_tree.get_object("comboboxScannerTypes"),
                 self.widget_tree.get_object("liststoreScannerTypes"),
+                self.widget_tree.get_object("labelScannerTypes"),
             ),
             (
                 self.widget_tree.get_object("comboboxSources"),
                 self.widget_tree.get_object("liststoreSources"),
+                self.widget_tree.get_object("labelSources"),
             ),
             (
                 self.widget_tree.get_object("comboboxResolutions"),
                 self.widget_tree.get_object("liststoreResolutions"),
+                self.widget_tree.get_object("labelResolutions"),
             ),
             (
                 self.widget_tree.get_object("comboboxModes"),
                 self.widget_tree.get_object("liststoreModes"),
+                self.widget_tree.get_object("labelModes"),
             ),
         ]
-        for (combobox, liststore) in lists:
+        for (combobox, liststore, label) in lists:
             combobox.set_model(liststore)
             combobox.set_sensitive(True)
             combobox.set_active(0)
+            label.set_sensitive(True)
 
     def _on_scanner_type_selected(self, combobox):
         types = self.widget_tree.get_object("liststoreScannerTypes")
