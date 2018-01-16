@@ -116,6 +116,7 @@ Pouet
 Done.</property>
   </object>
   <object class="GtkTextBuffer" id="textbufferSummary"/>
+  <object class="GtkTextBuffer" id="textbufferUserComment"/>
   <object class="GtkAssistant" id="mainform">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Scanner information collector</property>
@@ -868,6 +869,7 @@ Do not scan anything you do not want made public !</property>
                   <object class="GtkTextView" id="textviewComment">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="buffer">textbufferUserComment</property>
                     <property name="input_hints">GTK_INPUT_HINT_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
                   </object>
                 </child>
@@ -1019,6 +1021,9 @@ Ready to send the results to Openpaper.work.</property>
         <property name="complete">True</property>
         <property name="has_padding">False</property>
       </packing>
+    </child>
+    <child>
+      <placeholder/>
     </child>
     <child>
       <placeholder/>

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
+import base64
 import http.client
+import io
 import itertools
 import json
 import logging
@@ -57,7 +59,8 @@ class MainForm(object):
 
 
 class LogHandler(logging.Handler):
-    MAX_LINES = 1000
+    MAX_DISPLAYED_LINES = 1000
+    MAX_MEM_LINES = 10000
 
     def __init__(self, txtBuffer, scrollbars):
         super().__init__()
@@ -71,12 +74,14 @@ class LogHandler(logging.Handler):
             return
         line = self._formatter.format(record)
         self.output.append(line)
-        if len(self.output) > self.MAX_LINES:
+        if len(self.output) > self.MAX_MEM_LINES:
             self.output.pop(0)
         GLib.idle_add(self._update_buffer)
 
     def _update_buffer(self):
-        self.buf.set_text(self.get_logs())
+        logs = self.get_logs()
+        logs = logs[:self.MAX_DISPLAYED_LINES]
+        self.buf.set_text(logs)
         self.scrollbar.set_value(self.scrollbar.get_upper())
 
     def get_logs(self):
@@ -127,8 +132,10 @@ class PersonalInfo(object):
         }
 
     def complete_report(self, report):
-        # TODO
-        pass
+        report['user'] = {
+            'name': self.widget_tree.get_object("entryUserName").get_text(),
+            'email': self.widget_tree.get_object("entryUserEmail").get_text(),
+        }
 
 
 class ScannerSettings(object):
@@ -337,9 +344,40 @@ class ScannerSettings(object):
         return info
 
     def complete_report(self, report):
-        # TODO
-        pass
-
+        if 'scantest' not in report:
+            report['scantest'] = {}
+        report['scantest'].update({
+            'config': self.get_scanner_config()
+        })
+        scanner = self.get_scanner()
+        report['scanner'] = {
+            'vendor': scanner.vendor,
+            'model': scanner.model,
+            'nicename': scanner.nice_name,
+            'devid': scanner.name,
+            'fullname': "{} {} ({})".format(
+                scanner.vendor, scanner.model, scanner.nice_name
+            )
+        }
+        options = {}
+        for opt in scanner.options.values():
+            value = ""
+            try:
+                value = str(opt.value)
+            except pyinsane2.PyinsaneException as exc:
+                value = "(Exception: {})".format(str(exc))
+            options[opt.name] = {
+                'title': str(opt.title),
+                'desc': str(opt.desc),
+                'type': str(opt.val_type),
+                'unit': str(opt.unit),
+                'size': str(opt.size),
+                'capabilities': str(opt.capabilities),
+                'contrainttype': str(opt.constraint_type),
+                'constraint': str(opt.constraint),
+                'value': value
+            }
+        report['scanner']['options'] = options
 
 
 class SysInfo(object):
@@ -373,9 +411,7 @@ class SysInfo(object):
         }
 
     def complete_report(self, report):
-        # TODO
-        pass
-
+        report['system'] = self.get_info()
 
 
 class TestSummary(object):
@@ -489,6 +525,7 @@ class ScanTest(object):
             widget_tree.get_object("textbufferOnTheFly"),
             widget_tree.get_object("scrolledwindowOnTheFly")
         )
+        self.last_img = None
 
     def __str__(self):
         return "Scan test traces and results"
@@ -507,6 +544,7 @@ class ScanTest(object):
         ).start()
 
     def _on_scan_image(self, image):
+        self.last_img = image
         pixbuf = util.image2pixbuf(image)
         img_widget = self.widget_tree.get_object("imageOnTheFly")
         (pw, ph) = (pixbuf.get_width(), pixbuf.get_height())
@@ -523,8 +561,28 @@ class ScanTest(object):
         )
 
     def complete_report(self, report):
-        # TODO
-        pass
+        if 'scantest' not in report:
+            report['scantest'] = {}
+
+        traces = ""
+        try:
+            logs = self.log_handler.get_logs()
+            traces = base64.encodebytes(logs.encode("utf-8")).decode("utf-8")
+        except Exception as exc:
+            traces = "(Exception: {})".format(str(exc))
+        report['scantest']['traces'] = traces
+
+        image = "(none)"
+        try:
+            if self.last_img is not None:
+                image = io.BytesIO()
+                self.last_img.save(image, format="PNG")
+                image.seek(0)
+                image = image.read()
+                image = base64.encodebytes(images).decode("utf-8")
+        except Exception as exc:
+            image = "(Exception: {})".format(str(exc))
+        report['scantest']['image'] = image
 
 
 class PhotoSelector(object):
