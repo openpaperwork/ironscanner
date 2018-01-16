@@ -120,7 +120,7 @@ Done.</property>
   <object class="GtkAssistant" id="mainform">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Scanner information collector</property>
-    <property name="default_width">840</property>
+    <property name="default_width">860</property>
     <property name="default_height">480</property>
     <property name="icon_name">insert-image</property>
     <property name="use_header_bar">1</property>
@@ -489,9 +489,8 @@ This program is designed to collect as much information as possible regarding yo
                             <child>
                               <object class="GtkComboBox" id="comboboxScannerTypes">
                                 <property name="visible">True</property>
-                                <property name="sensitive">False</property>
                                 <property name="can_focus">False</property>
-                                <property name="model">liststoreLoading</property>
+                                <property name="model">liststoreScannerTypes</property>
                                 <property name="active">0</property>
                                 <property name="id_column">1</property>
                                 <child>

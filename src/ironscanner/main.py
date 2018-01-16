@@ -245,11 +245,6 @@ class ScannerSettings(object):
 
         lists = [
             (
-                self.widget_tree.get_object("comboboxScannerTypes"),
-                self.widget_tree.get_object("liststoreScannerTypes"),
-                self.widget_tree.get_object("labelScannerTypes"),
-            ),
-            (
                 self.widget_tree.get_object("comboboxSources"),
                 self.widget_tree.get_object("liststoreSources"),
                 self.widget_tree.get_object("labelSources"),
