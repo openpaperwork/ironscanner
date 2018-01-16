@@ -141,10 +141,14 @@ class PersonalInfo(object):
         }
 
     def complete_report(self, report):
-        report['user'] = {
-            'name': self.widget_tree.get_object("entryUserName").get_text(),
-            'email': self.widget_tree.get_object("entryUserEmail").get_text(),
-        }
+        if 'user' not in report:
+            report['user'] = {}
+        report['user']['name'] = (
+            self.widget_tree.get_object("entryUserName").get_text()
+        )
+        report['user']['email'] = (
+            self.widget_tree.get_object("entryUserEmail").get_text()
+        )
 
 
 class ScannerSettings(object):
@@ -160,6 +164,7 @@ class ScannerSettings(object):
             "changed", self._on_scanner_type_selected
         )
         self.scanners = {}
+        self.options = {}
 
     def __str__(self):
         return "Scanner settings"
@@ -217,6 +222,7 @@ class ScannerSettings(object):
 
         logger.info("Selected scanner: {}".format(scanner.name))
 
+        self.options = {}
         for opt in scanner.options.values():
             logger.info("  Option: %s", opt.name)
             logger.info("    Title: %s", opt.title)
@@ -227,14 +233,23 @@ class ScannerSettings(object):
             logger.info("    Capabilities: %s", str(opt.capabilities))
             logger.info("    Constraint type: %s", str(opt.constraint_type))
             logger.info("    Constraint: %s", str(opt.constraint))
+            value = ""
             try:
-                logger.info("    Value: %s", str(opt.value))
+                value = str(opt.value)
             except pyinsane2.PyinsaneException as exc:
-                # Some scanner allow changing a value, but not reading it.
-                # For instance Canon Lide 110 allow setting the resolution,
-                # but not reading it
-                logger.info("    Value: Failed to get the value: %s",
-                            str(exc))
+                value = "(Exception: {})".format(str(exc))
+            logger.info("    Value: %s", value)
+            self.options[opt.name] = {
+                'title': str(opt.title),
+                'desc': str(opt.desc),
+                'type': str(opt.val_type),
+                'unit': str(opt.unit),
+                'size': str(opt.size),
+                'capabilities': str(opt.capabilities),
+                'contrainttype': str(opt.constraint_type),
+                'constraint': str(opt.constraint),
+                'initial_value': value
+            }
 
         sources = self.widget_tree.get_object("liststoreSources")
         sources.clear()
@@ -353,6 +368,23 @@ class ScannerSettings(object):
         report['scantest'].update({
             'config': self.get_scanner_config()
         })
+
+        imgpath = self.widget_tree.get_object("filechooserPicture").get_file()
+        img = None
+        if imgpath != None:
+            try:
+                pil_img = Image.open(imgpath.get_path())
+                pil_img.load()
+                imgraw = io.BytesIO()
+                pil_img.save(img, format="PNG")
+                imgraw.seek(0)
+                imgraw = imgraw.read()
+                img = base64.encodebytes(imgraw).decode("utf-8")
+            except Exception as exc:
+                logger.error("Failed to load image {}".format(
+                    imgpath.get_path())
+                )
+
         scanner = self.get_scanner()
         report['scanner'] = {
             'vendor': scanner.vendor,
@@ -361,27 +393,10 @@ class ScannerSettings(object):
             'devid': scanner.name,
             'fullname': "{} {} ({})".format(
                 scanner.vendor, scanner.model, scanner.nice_name
-            )
+            ),
+            'picture': img,
         }
-        options = {}
-        for opt in scanner.options.values():
-            value = ""
-            try:
-                value = str(opt.value)
-            except pyinsane2.PyinsaneException as exc:
-                value = "(Exception: {})".format(str(exc))
-            options[opt.name] = {
-                'title': str(opt.title),
-                'desc': str(opt.desc),
-                'type': str(opt.val_type),
-                'unit': str(opt.unit),
-                'size': str(opt.size),
-                'capabilities': str(opt.capabilities),
-                'contrainttype': str(opt.constraint_type),
-                'constraint': str(opt.constraint),
-                'value': value
-            }
-        report['scanner']['options'] = options
+        report['scanner']['options'] = self.options
 
 
 class SysInfo(object):
@@ -588,18 +603,6 @@ class ScanTest(object):
         report['scantest']['image'] = image
 
 
-class PhotoSelector(object):
-    def __init__(self, widget_tree):
-        self.widget_tree = widget_tree
-
-    def __str__(self):
-        return "Optional photo/image"
-
-    def complete_report(self, report):
-        # TODO
-        pass
-
-
 class UserComment(object):
     def __init__(self, widget_tree):
         self.widget_tree = widget_tree
@@ -608,8 +611,12 @@ class UserComment(object):
         return "User comment"
 
     def complete_report(self, report):
-        # TODO
-        pass
+        if 'user' not in report:
+            report['user'] = {}
+        buf = self.widget_tree.get_object("textbufferUserComment")
+        start = buf.get_iter_at_offset(0)
+        end = buf.get_iter_at_offset(-1)
+        report['user']['comment'] = buf.get_text(start, end, False)
 
 
 class ReportSenderThread(threading.Thread):
@@ -706,12 +713,10 @@ def main():
         sys_info = SysInfo()
         TestSummary(widget_tree, [user_info, scan_settings, sys_info])
         scan_test = ScanTest(widget_tree, scan_settings)
-        photo_selector = PhotoSelector(widget_tree)
         user_comment = UserComment(widget_tree)
 
         ReportSender(widget_tree, [
-            user_info, scan_settings, sys_info, scan_test,
-            photo_selector, user_comment
+            user_info, scan_settings, sys_info, scan_test, user_comment,
         ])
 
         application.register()
