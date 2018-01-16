@@ -10,6 +10,7 @@ setup(
     # Before releasing a new version:
     # * update the download_url in this file
     # * update the ChangeLog file
+    # * update src/ironscanner/main.py:__version__
     # * update flatpak/work.openpaper.IronScanner.appdata.xml:<releases>
     #
     # Release:

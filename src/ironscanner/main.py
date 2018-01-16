@@ -19,6 +19,7 @@ from gi.repository import GdkPixbuf
 from gi.repository import GLib
 from gi.repository import Gtk
 
+import PIL
 import psutil
 import pyinsane2
 
@@ -32,6 +33,9 @@ logger = logging.getLogger(__name__)
 
 
 g_log_tracker = log.LogTracker()
+
+
+__version__ = "1.0"
 
 
 TARGET_HOST = os.getenv("TARGET_HOST", "openpaper.work")
@@ -431,6 +435,16 @@ class SysInfo(object):
 
     def complete_report(self, report):
         report['system'] = self.get_info()
+        try:
+            report['system']['versions'] = {
+                'pillow': PIL.__version__,
+                'pyinsane2': pyinsane2.__version__,
+                'ironscanner': __version__,
+            }
+        except Exception as exc:
+            logger.warning("Failed to get python module version: {}".format(
+                str(exc)
+            ), exc_info=exc)
 
 
 class TestSummary(object):
