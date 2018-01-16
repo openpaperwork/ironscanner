@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
+import http.client
 import itertools
+import json
 import logging
 import multiprocessing
 import os
 import platform
 import sys
 import threading
+import urllib
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -29,6 +32,57 @@ logger = logging.getLogger(__name__)
 g_log_tracker = log.LogTracker()
 
 
+TARGET_HOST = os.getenv("TARGET_HOST", "openpaper.work")
+TARGET_PATH = os.getenv("TARGET_PATH", "/scannerdb/post")
+USER_AGENT = "IronScanner"
+
+
+class MainForm(object):
+    def __init__(self, application, main_loop, widget_tree):
+        self.application = application
+        self.main_loop = main_loop
+        self.widget_tree = widget_tree
+
+        self.application.connect("startup", self.init_mainform)
+
+    def init_mainform(self, *args, **kwargs):
+        mainform = self.widget_tree.get_object("mainform")
+        mainform.set_icon(util.load_pixbuf("logo.png"))
+        mainform.connect("close", lambda w: self.main_loop.quit())
+        mainform.connect("escape", lambda w: self.main_loop.quit())
+        mainform.connect("cancel", lambda w: self.main_loop.quit())
+        mainform.show_all()
+
+        self.application.add_window(mainform)
+
+
+class LogHandler(logging.Handler):
+    MAX_LINES = 1000
+
+    def __init__(self, txtBuffer, scrollbars):
+        super().__init__()
+        self._formatter = logging.Formatter('%(levelname)-6s %(message)s')
+        self.output = []
+        self.buf = txtBuffer
+        self.scrollbar = scrollbars.get_vadjustment()
+
+    def emit(self, record):
+        if record.levelno <= logging.DEBUG:
+            return
+        line = self._formatter.format(record)
+        self.output.append(line)
+        if len(self.output) > self.MAX_LINES:
+            self.output.pop(0)
+        GLib.idle_add(self._update_buffer)
+
+    def _update_buffer(self):
+        self.buf.set_text(self.get_logs())
+        self.scrollbar.set_value(self.scrollbar.get_upper())
+
+    def get_logs(self):
+        return "\n".join(self.output)
+
+
 class ScannerFinder(threading.Thread):
     def __init__(self, cb):
         super().__init__(name="ScannerFinder")
@@ -47,6 +101,9 @@ class PersonalInfo(object):
         widget_tree.get_object("checkboxAcceptContact").connect(
             "toggled", self._on_accept_contact_changed
         )
+
+    def __str__(self):
+        return "User info"
 
     def _on_accept_contact_changed(self, button):
         widgets = [
@@ -69,6 +126,10 @@ class PersonalInfo(object):
             self.widget_tree.get_object("entryUserEmail").get_text(),
         }
 
+    def complete_report(self, report):
+        # TODO
+        pass
+
 
 class ScannerSettings(object):
     def __init__(self, widget_tree):
@@ -83,6 +144,9 @@ class ScannerSettings(object):
             "changed", self._on_scanner_type_selected
         )
         self.scanners = {}
+
+    def __str__(self):
+        return "Scanner settings"
 
     def _on_assistant_page_prepare(self, assistant, page):
         if page is not self.widget_tree.get_object("pageTestSettings"):
@@ -272,8 +336,16 @@ class ScannerSettings(object):
         }
         return info
 
+    def complete_report(self, report):
+        # TODO
+        pass
+
+
 
 class SysInfo(object):
+    def __str__(self):
+        return "System configuration"
+
     def get_info(self):
         return {
             'sys_arch': platform.architecture(),
@@ -299,6 +371,11 @@ class SysInfo(object):
                 ["{}: {}".format(k[4:], v) for (k, v) in self.get_info().items()]
             )
         }
+
+    def complete_report(self, report):
+        # TODO
+        pass
+
 
 
 class TestSummary(object):
@@ -338,6 +415,7 @@ System informations that will be attached to the report:
         summary.set_text(content)
         logger.info("Summary ready")
         logger.info(content)
+
 
 
 class ScanThread(threading.Thread):
@@ -407,34 +485,13 @@ class ScanTest(object):
         widget_tree.get_object("mainform").connect(
             "prepare", self._on_assistant_page_prepare
         )
-        self.log_handler = self.LogHandler(widget_tree)
+        self.log_handler = LogHandler(
+            widget_tree.get_object("textbufferOnTheFly"),
+            widget_tree.get_object("scrolledwindowOnTheFly")
+        )
 
-    class LogHandler(logging.Handler):
-        MAX_LINES = 1000
-
-        def __init__(self, widget_tree):
-            super().__init__()
-            self._formatter = logging.Formatter('%(levelname)-6s %(message)s')
-            self.output = []
-            self.buf = widget_tree.get_object("textbufferOnTheFly")
-            scrollbars = widget_tree.get_object("scrolledwindowOnTheFly")
-            self.scrollbar = scrollbars.get_vadjustment()
-
-        def emit(self, record):
-            if record.levelno <= logging.DEBUG:
-                return
-            line = self._formatter.format(record)
-            self.output.append(line)
-            if len(self.output) > self.MAX_LINES:
-                self.output.pop(0)
-            GLib.idle_add(self._update_buffer)
-
-        def _update_buffer(self):
-            self.buf.set_text(self.get_logs())
-            self.scrollbar.set_value(self.scrollbar.get_upper())
-
-        def get_logs(self):
-            return "\n".join(self.output)
+    def __str__(self):
+        return "Scan test traces and results"
 
     def _on_assistant_page_prepare(self, assistant, page):
         l = logging.getLogger()
@@ -465,39 +522,108 @@ class ScanTest(object):
             True
         )
 
+    def complete_report(self, report):
+        # TODO
+        pass
+
 
 class PhotoSelector(object):
     def __init__(self, widget_tree):
         self.widget_tree = widget_tree
+
+    def __str__(self):
+        return "Optional photo/image"
+
+    def complete_report(self, report):
+        # TODO
+        pass
 
 
 class UserComment(object):
     def __init__(self, widget_tree):
         self.widget_tree = widget_tree
 
+    def __str__(self):
+        return "User comment"
+
+    def complete_report(self, report):
+        # TODO
+        pass
+
+
+class ReportSenderThread(threading.Thread):
+    def __init__(self, report_authors, cb):
+        super().__init__(name="ReportSender")
+        self.cb = cb
+        self.report_authors = report_authors
+
+    def run(self):
+        report = {}
+        logger.info("Building report ...")
+        for author in self.report_authors:
+            logger.info("* {}".format(str(author)))
+            try:
+                author.complete_report(report)
+            except Exception as exc:
+                logger.warning(
+                    "Failed to build report section '{}'".format(str(author)),
+                    exc_info=exc
+                )
+        report = json.dumps(report)
+        logger.info("Report ready: {} Kbytes to send".format(
+            int(len(report.encode("utf-8")) / 1024)
+        ))
+
+        logger.info("Connecting to {}".format(TARGET_HOST))
+        connection = http.client.HTTPSConnection(host=TARGET_HOST)
+        logger.info("Posting report ...")
+        connection.request("POST", url=TARGET_PATH, headers={
+            "Content-type": "application/json",
+            "Accept": "application/json",
+            'User-Agent': USER_AGENT,
+        }, body=report)
+        reply = connection.getresponse()
+        if reply.status != http.client.OK:
+            logger.error("Error from server: {} - {}".format(
+                reply.status, reply.reason
+            ))
+            return
+        reply_msg = reply.read().decode('utf-8')
+        logger.info("Reply from server: {} - {} - {}".format(
+            reply.status, reply.reason, reply_msg
+        ))
+        logger.info("Report posted - Thank you for your contribution :-)")
+        GLib.idle_add(self.cb)
+
 
 class ReportSender(object):
-    def __init__(self, widget_tree):
+    def __init__(self, widget_tree, report_authors):
         self.widget_tree = widget_tree
+        self.txt_buffer = widget_tree.get_object("textbufferSendingReport")
+        widget_tree.get_object("mainform").connect(
+            "prepare", self._on_assistant_page_prepare
+        )
+        self.report_authors = report_authors
+        self.log_handler = LogHandler(
+            widget_tree.get_object("textbufferSendingReport"),
+            widget_tree.get_object("scrolledwindowSendingResults")
+        )
 
+    def _on_assistant_page_prepare(self, assistant, page):
+        l = logging.getLogger()
+        if page is not self.widget_tree.get_object("pageSendReport"):
+            l.removeHandler(self.log_handler)
+            return
+        l.addHandler(self.log_handler)
+        self.txt_buffer.set_text("")
+        self.txt = []
+        ReportSenderThread(self.report_authors, self._on_report_sent).start()
 
-class MainForm(object):
-    def __init__(self, application, main_loop, widget_tree):
-        self.application = application
-        self.main_loop = main_loop
-        self.widget_tree = widget_tree
-
-        self.application.connect("startup", self.init_mainform)
-
-    def init_mainform(self, *args, **kwargs):
-        mainform = self.widget_tree.get_object("mainform")
-        mainform.set_icon(util.load_pixbuf("logo.png"))
-        mainform.connect("close", lambda w: self.main_loop.quit())
-        mainform.connect("escape", lambda w: self.main_loop.quit())
-        mainform.connect("cancel", lambda w: self.main_loop.quit())
-        mainform.show_all()
-
-        self.application.add_window(mainform)
+    def _on_report_sent(self):
+        self.widget_tree.get_object("mainform").set_page_complete(
+            self.widget_tree.get_object("pageSendReport"),
+            True
+        )
 
 
 def main():
@@ -519,10 +645,14 @@ def main():
         scan_settings = ScannerSettings(widget_tree)
         sys_info = SysInfo()
         TestSummary(widget_tree, [user_info, scan_settings, sys_info])
-        ScanTest(widget_tree, scan_settings)
-        PhotoSelector(widget_tree)
-        UserComment(widget_tree)
-        ReportSender(widget_tree)
+        scan_test = ScanTest(widget_tree, scan_settings)
+        photo_selector = PhotoSelector(widget_tree)
+        user_comment = UserComment(widget_tree)
+
+        ReportSender(widget_tree, [
+            user_info, scan_settings, sys_info, scan_test,
+            photo_selector, user_comment
+        ])
 
         application.register()
 

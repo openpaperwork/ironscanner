@@ -108,7 +108,7 @@
   <object class="GtkTextBuffer" id="textbufferOnTheFly">
     <property name="text" translatable="yes">Put some logs here</property>
   </object>
-  <object class="GtkTextBuffer" id="textbufferSendingResults">
+  <object class="GtkTextBuffer" id="textbufferSendingReport">
     <property name="text" translatable="yes">Sending results to openpaper.work ...
 Pouet
 Pouet
@@ -912,9 +912,8 @@ Ready to send the results to Openpaper.work.</property>
       </packing>
     </child>
     <child>
-      <object class="GtkBox">
+      <object class="GtkBox" id="pageSendReport">
         <property name="visible">True</property>
-        <property name="sensitive">False</property>
         <property name="can_focus">False</property>
         <property name="margin_left">20</property>
         <property name="margin_right">20</property>
@@ -922,7 +921,7 @@ Ready to send the results to Openpaper.work.</property>
         <property name="margin_bottom">20</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkScrolledWindow">
+          <object class="GtkScrolledWindow" id="scrolledwindowSendingResults">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="shadow_type">in</property>
@@ -931,7 +930,8 @@ Ready to send the results to Openpaper.work.</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="editable">False</property>
-                <property name="buffer">textbufferSendingResults</property>
+                <property name="wrap_mode">word</property>
+                <property name="buffer">textbufferSendingReport</property>
                 <property name="monospace">True</property>
               </object>
             </child>
@@ -1019,6 +1019,9 @@ Ready to send the results to Openpaper.work.</property>
         <property name="complete">True</property>
         <property name="has_padding">False</property>
       </packing>
+    </child>
+    <child>
+      <placeholder/>
     </child>
     <child>
       <placeholder/>
