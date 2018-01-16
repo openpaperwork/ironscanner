@@ -69,6 +69,15 @@ class LogHandler(logging.Handler):
         self.buf = txtBuffer
         self.scrollbar = scrollbars.get_vadjustment()
 
+    def enable(self):
+        l = logging.getLogger()
+        l.addHandler(self)
+
+    def disable(self):
+        self.flush()
+        l = logging.getLogger()
+        l.removeHandler(self)
+
     def emit(self, record):
         if record.levelno <= logging.DEBUG:
             return
@@ -81,11 +90,11 @@ class LogHandler(logging.Handler):
     def _update_buffer(self):
         logs = self.get_logs()
         logs = logs[:self.MAX_DISPLAYED_LINES]
-        self.buf.set_text(logs)
+        self.buf.set_text("\n".join(logs))
         self.scrollbar.set_value(self.scrollbar.get_upper())
 
     def get_logs(self):
-        return "\n".join(self.output)
+        return self.output
 
 
 class ScannerFinder(threading.Thread):
@@ -526,11 +535,10 @@ class ScanTest(object):
         return "Scan test traces and results"
 
     def _on_assistant_page_prepare(self, assistant, page):
-        l = logging.getLogger()
         if page is not self.widget_tree.get_object("pageTestScan"):
-            l.removeHandler(self.log_handler)
+            self.log_handler.disable()
             return
-        l.addHandler(self.log_handler)
+        self.log_handler.enable()
         scanner = self.scanner_settings.get_scanner()
         settings = self.scanner_settings.get_scanner_config()
         ScanThread(
@@ -561,7 +569,7 @@ class ScanTest(object):
 
         traces = ""
         try:
-            logs = self.log_handler.get_logs()
+            logs = "\n".join(self.log_handler.get_logs())
             traces = base64.encodebytes(logs.encode("utf-8")).decode("utf-8")
         except Exception as exc:
             traces = "(Exception: {})".format(str(exc))
@@ -663,11 +671,10 @@ class ReportSender(object):
         )
 
     def _on_assistant_page_prepare(self, assistant, page):
-        l = logging.getLogger()
         if page is not self.widget_tree.get_object("pageSendReport"):
-            l.removeHandler(self.log_handler)
+            self.log_handler.disable()
             return
-        l.addHandler(self.log_handler)
+        self.log_handler.enable()
         self.txt_buffer.set_text("")
         self.txt = []
         ReportSenderThread(self.report_authors, self._on_report_sent).start()
