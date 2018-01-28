@@ -178,6 +178,9 @@ class ScannerSettings(object):
         if page is not self.widget_tree.get_object("pageTestSettings"):
             return
         ScannerFinder(self._on_scanners_get).start()
+        self._on_scanner_type_selected(self.widget_tree.get_object(
+            "comboboxScannerTypes"
+        ))
 
     def _on_scanners_get(self, scanners):
         self.widget_tree.get_object("mainform").set_page_complete(
