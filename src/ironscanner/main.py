@@ -38,6 +38,7 @@ g_log_tracker = log.LogTracker()
 __version__ = "1.0"
 
 
+TARGET_PROTOCOL = os.getenv("TARGET_PROTOCOL", "https")
 TARGET_HOST = os.getenv("TARGET_HOST", "openpaper.work")
 TARGET_PATH = os.getenv("TARGET_PATH", "/scannerdb/post")
 USER_AGENT = "IronScanner"
@@ -657,7 +658,10 @@ class ReportSenderThread(threading.Thread):
         ))
 
         logger.info("Connecting to {}".format(TARGET_HOST))
-        connection = http.client.HTTPSConnection(host=TARGET_HOST)
+        if TARGET_PROTOCOL == "http":
+            connection = http.client.HTTPConnection(host=TARGET_HOST)
+        else:
+            connection = http.client.HTTPSConnection(host=TARGET_HOST)
         logger.info("Posting report ...")
         connection.request("POST", url=TARGET_PATH, headers={
             "Content-type": "application/json",
@@ -666,16 +670,20 @@ class ReportSenderThread(threading.Thread):
         }, body=report)
         reply = connection.getresponse()
         if reply.status != http.client.OK:
-            logger.error("Error from server: {} - {}".format(
-                reply.status, reply.reason
+            logger.error("Error from server: {} - {}\n".format(
+                reply.status, reply.reason, reply.read().decode("utf-8")
             ))
             return
         reply_msg = reply.read().decode('utf-8')
         logger.info("Reply from server: {} - {} - {}".format(
             reply.status, reply.reason, reply_msg
         ))
+        reply_msg = json.loads(reply_msg)
+        url = "{}://{}{}".format(
+            TARGET_PROTOCOL, TARGET_HOST, reply_msg['url']
+        )
         logger.info("Report posted - Thank you for your contribution :-)")
-        GLib.idle_add(self.cb)
+        GLib.idle_add(self.cb, url)
 
 
 class ReportSender(object):
@@ -700,11 +708,15 @@ class ReportSender(object):
         self.txt = []
         ReportSenderThread(self.report_authors, self._on_report_sent).start()
 
-    def _on_report_sent(self):
+    def _on_report_sent(self, report_url):
         self.widget_tree.get_object("mainform").set_page_complete(
             self.widget_tree.get_object("pageSendReport"),
             True
         )
+        self.widget_tree.get_object("linkbuttonOpenReport").set_label(
+            report_url
+        )
+        self.widget_tree.get_object("linkbuttonOpenReport").set_uri(report_url)
 
 
 def main():

@@ -988,7 +988,7 @@ Ready to send the results to Openpaper.work.</property>
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">Test results have been sent to Openpaper.work. You can access them by following the link below:</property>
+            <property name="label" translatable="yes">Test results have been sent to Openpaper.work. You can access them by clicking the link below:</property>
             <property name="wrap">True</property>
           </object>
           <packing>
@@ -1003,7 +1003,6 @@ Ready to send the results to Openpaper.work.</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
-            <property name="action_name">report.open</property>
             <property name="relief">none</property>
             <property name="uri">https://openpaper.work/scannerdb/1234</property>
           </object>
@@ -1020,6 +1019,9 @@ Ready to send the results to Openpaper.work.</property>
         <property name="complete">True</property>
         <property name="has_padding">False</property>
       </packing>
+    </child>
+    <child>
+      <placeholder/>
     </child>
     <child>
       <placeholder/>
