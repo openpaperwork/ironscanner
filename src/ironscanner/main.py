@@ -489,22 +489,22 @@ System informations that will be attached to the report:
 
 
 class ScanThread(threading.Thread):
-    def __init__(self, scanner, settings, image_cb, result_cb):
+    def __init__(self, scanner, settings, progress_cb, result_cb):
         super().__init__(name="Test scan thread")
         self.scanner = scanner
         self.settings = settings
-        self.image_cb = image_cb
+        self.progress_cb = progress_cb
         self.result_cb = result_cb
         self.condition = threading.Condition()
 
-    def _upd_image(self, image):
+    def _upd_progression(self, image, progression):
         with self.condition:
-            self.image_cb(image)
+            self.progress_cb(image, progression)
             self.condition.notify_all()
 
-    def upd_image(self, image):
+    def upd_progression(self, image, progression):
         with self.condition:
-            GLib.idle_add(self._upd_image, image)
+            GLib.idle_add(self._upd_progression, image, progression)
             self.condition.wait()
 
     def run(self):
@@ -521,6 +521,8 @@ class ScanThread(threading.Thread):
                 # we set multiple = True, pyinsane will take care of switching
                 # it back to False if required
                 scan_session = trace.trace(self.scanner.scan, multiple=True)
+                expected_size = scan_session.scan.expected_size
+                logger.info("Expected image size: {}".format(expected_size))
                 page_nb = 0
                 while True:
                     logger.info("Scanning page {}".format(page_nb))
@@ -530,13 +532,17 @@ class ScanThread(threading.Thread):
                             logger.info("Available lines: {}".format(
                                 scan_session.scan.available_lines
                             ))
-                            self.upd_image(scan_session.scan.get_image())
+                            self.upd_progression(
+                                scan_session.scan.get_image(),
+                                scan_session.scan.available_lines[1] /
+                                expected_size[1]
+                            )
                     except EOFError:
                         logger.info("End of page. Available lines: {}".format(
                             scan_session.scan.available_lines
                         ))
                         page_nb += 1
-                        self.upd_image(scan_session.scan.get_image())
+                        self.upd_progression(scan_session.scan.get_image(), 1.0)
             except StopIteration:
                 logger.info("Got StopIteration")
             logger.info("Scanned {} images".format(len(scan_session.images)))
@@ -573,10 +579,10 @@ class ScanTest(object):
         settings = self.scanner_settings.get_scanner_config()
         ScanThread(
             scanner, settings,
-            self._on_scan_image, self._on_scan_result
+            self._on_scan_progression, self._on_scan_result
         ).start()
 
-    def _on_scan_image(self, image):
+    def _on_scan_progression(self, image, progression):
         self.last_img = image
         pixbuf = util.image2pixbuf(image)
         img_widget = self.widget_tree.get_object("imageOnTheFly")
@@ -584,8 +590,11 @@ class ScanTest(object):
         rect = img_widget.get_allocation()
         ratio = max(pw / rect.width, pw / rect.height)
         pixbuf = pixbuf.scale_simple(int(pw / ratio), int(ph / ratio),
-                                        GdkPixbuf.InterpType.BILINEAR)
+                                     GdkPixbuf.InterpType.BILINEAR)
         img_widget.set_from_pixbuf(pixbuf)
+        self.widget_tree.get_object("progressbarTestProgress").set_fraction(
+            progression
+        )
 
     def _on_scan_result(self):
         self.widget_tree.get_object("mainform").set_page_complete(
