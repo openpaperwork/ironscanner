@@ -381,17 +381,21 @@ class ScannerSettings(object):
         img = None
         if imgpath != None:
             try:
-                pil_img = Image.open(imgpath.get_path())
+                pil_img = PIL.Image.open(imgpath.get_path())
                 pil_img.load()
                 imgraw = io.BytesIO()
-                pil_img.save(img, format="PNG")
+                pil_img.save(imgraw, format="PNG")
                 imgraw.seek(0)
                 imgraw = imgraw.read()
                 img = base64.encodebytes(imgraw).decode("utf-8")
             except Exception as exc:
                 logger.error("Failed to load image {}".format(
-                    imgpath.get_path())
+                    imgpath.get_path()), exc_info=exc
                 )
+
+        dev_type = self.widget_tree.get_object('liststoreScannerTypes')[
+            self.widget_tree.get_object('comboboxScannerTypes').get_active()
+        ][1]
 
         scanner = self.get_scanner()
         report['scanner'] = {
@@ -402,8 +406,13 @@ class ScannerSettings(object):
             'fullname': "{} {} ({})".format(
                 scanner.vendor, scanner.model, scanner.nice_name
             ),
-            'picture': img,
+            'type': str(dev_type),
         }
+        if img is not None:
+            logger.info("Image attached to report: {}".format(imgpath.get_uri()))
+            report['scanner']['picture'] = img
+        else:
+            logger.info("No image attached to report")
         report['scanner']['options'] = self.options
 
 
@@ -624,7 +633,7 @@ class ScanTest(object):
                 self.last_img.save(image, format="PNG")
                 image.seek(0)
                 image = image.read()
-                image = base64.encodebytes(images).decode("utf-8")
+                image = base64.encodebytes(image).decode("utf-8")
         except Exception as exc:
             image = "(Exception: {})".format(str(exc))
         report['scantest']['image'] = image
