@@ -67,12 +67,17 @@ class LogHandler(logging.Handler):
     MAX_DISPLAYED_LINES = 1000
     MAX_MEM_LINES = 10000
 
-    def __init__(self, txtBuffer, scrollbars):
+    def __init__(self, txt_buffer, scrollbars,
+                 base_level=logging.INFO,
+                 buffer_level=logging.INFO):
         super().__init__()
         self._formatter = logging.Formatter('%(levelname)-6s %(message)s')
-        self.output = []
-        self.buf = txtBuffer
+        self.output_lines = []
+        self.buffer_lines = []
+        self.buf = txt_buffer
         self.scrollbar = scrollbars.get_vadjustment()
+        self.base_level = base_level
+        self.buffer_level = buffer_level
 
     def enable(self):
         l = logging.getLogger()
@@ -84,22 +89,26 @@ class LogHandler(logging.Handler):
         l.removeHandler(self)
 
     def emit(self, record):
-        if record.levelno <= logging.DEBUG:
+        if record.levelno < self.base_level:
             return
         line = self._formatter.format(record)
-        self.output.append(line)
-        if len(self.output) > self.MAX_MEM_LINES:
-            self.output.pop(0)
+        self.output_lines.append(line)
+        if len(self.output_lines) > self.MAX_MEM_LINES:
+            self.output_lines.pop(0)
+
+        if record.levelno < self.buffer_level:
+            return
+        self.buffer_lines.append(line)
+        if len(self.buffer_lines) > self.MAX_DISPLAYED_LINES:
+            self.buffer_lines.pop(0)
         GLib.idle_add(self._update_buffer)
 
     def _update_buffer(self):
-        logs = self.get_logs()
-        logs = logs[:self.MAX_DISPLAYED_LINES]
-        self.buf.set_text("\n".join(logs))
+        self.buf.set_text("\n".join(self.buffer_lines))
         self.scrollbar.set_value(self.scrollbar.get_upper())
 
     def get_logs(self):
-        return self.output
+        return self.output_lines
 
 
 class ScannerFinder(threading.Thread):
@@ -428,8 +437,8 @@ class SysInfo(object):
             'sys_mem': int(psutil.virtual_memory().total),
             'sys_nb_cpus': multiprocessing.cpu_count(),
             'sys_os_uname': os.uname(),
-            'sys_platform': platform.platform(),
-            'sys_platform': sys.platform,
+            'sys_platform_short': platform.platform(),
+            'sys_platform_detailed': sys.platform,
             'sys_platform_uname': platform.uname(),
             'sys_proc': platform.processor(),
             'sys_python': sys.version,
@@ -575,7 +584,9 @@ class ScanTest(object):
         )
         self.log_handler = LogHandler(
             widget_tree.get_object("textbufferOnTheFly"),
-            widget_tree.get_object("scrolledwindowOnTheFly")
+            widget_tree.get_object("scrolledwindowOnTheFly"),
+            base_level=logging.DEBUG,
+            buffer_level=logging.INFO,
         )
         self.last_img = None
 
@@ -717,7 +728,9 @@ class ReportSender(object):
         self.report_authors = report_authors
         self.log_handler = LogHandler(
             widget_tree.get_object("textbufferSendingReport"),
-            widget_tree.get_object("scrolledwindowSendingResults")
+            widget_tree.get_object("scrolledwindowSendingResults"),
+            base_level=logging.DEBUG,
+            buffer_level=logging.INFO,
         )
 
     def _on_assistant_page_prepare(self, assistant, page):
