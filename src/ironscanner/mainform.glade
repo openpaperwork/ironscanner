@@ -595,7 +595,7 @@ This program is designed to collect as much information as possible regarding yo
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Please put paper sheet(s) in all the selected sources</property>
+                <property name="label" translatable="yes">Please put A4 or Letter paper sheet(s) in all the selected sources</property>
                 <property name="wrap">True</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
@@ -1019,6 +1019,9 @@ Ready to send the results to Openpaper.work.</property>
         <property name="complete">True</property>
         <property name="has_padding">False</property>
       </packing>
+    </child>
+    <child>
+      <placeholder/>
     </child>
     <child>
       <placeholder/>
