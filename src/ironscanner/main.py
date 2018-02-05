@@ -648,6 +648,9 @@ class ScanTest(object):
         except Exception as exc:
             image = "(Exception: {})".format(str(exc))
         report['scantest']['image'] = image
+        report['scantest']['successful'] = self.widget_tree.get_object(
+            "radiobuttonScanSuccessful"
+        ).get_active()
 
 
 class UserComment(object):
