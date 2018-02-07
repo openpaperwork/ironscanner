@@ -52,6 +52,11 @@ def load_pixbuf(filename):
     return GdkPixbuf.Pixbuf.new_from_file(img_file)
 
 
+def load_text(filename):
+    with open(_get_resource_path(filename), 'r') as file_descriptor:
+        return file_descriptor.read().strip()
+
+
 def load_uifile(filename):
     """
     Load a .glade file and return the corresponding widget tree

@@ -5,6 +5,13 @@ from setuptools import (
     setup,
 )
 
+
+with open("src/ironscanner/version.txt", "r") as file_descriptor:
+    version = file_descriptor.read().strip()
+    if "-" in version:
+        version = version.split("-")[0]
+
+
 setup(
     name="ironscanner",
     # Before releasing a new version:
@@ -16,17 +23,14 @@ setup(
     # Release:
     # * commit
     # * tag
-    # * python3 ./setup.py sdist upload
-    #
-    # After the release:
-    # * add a file flatpak/<version>.json
-    # * update flatpak/release.json
-    version="1.0",
+    version=version,
     description=(
         "Scanner information collector"
     ),
-    long_description="""Collect as much information as possible regarding
-    image scanners.""",
+    long_description=(
+        "Collect as much information as possible regarding"
+        " image scanners."
+    ),
     keywords="scanner gui",
     url="https://github.com/openpaperwork/ironscanner",
     download_url=("https://github.com/openpaperwork/ironscanner"

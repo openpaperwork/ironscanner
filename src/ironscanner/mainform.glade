@@ -125,18 +125,43 @@ Done.</property>
     <property name="icon_name">insert-image</property>
     <property name="use_header_bar">1</property>
     <child>
-      <object class="GtkLabel">
+      <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="margin_left">30</property>
         <property name="margin_right">30</property>
         <property name="margin_top">30</property>
         <property name="margin_bottom">30</property>
-        <property name="label" translatable="yes">&lt;big&gt;&lt;big&gt;Scanner information collector&lt;/big&gt;&lt;/big&gt;
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label" translatable="yes">&lt;big&gt;&lt;big&gt;Scanner information collector&lt;/big&gt;&lt;/big&gt;
 
 This program is designed to collect as much information as possible regarding your scanners. It will send a report to openpaper.work. Reports may be anonymous.</property>
-        <property name="use_markup">True</property>
-        <property name="wrap">True</property>
+            <property name="use_markup">True</property>
+            <property name="wrap">True</property>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="ironscannerVersionLabel">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label">IronScanner</property>
+            <property name="xalign">0</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
       </object>
       <packing>
         <property name="page_type">intro</property>
@@ -1019,6 +1044,9 @@ Ready to send the results to Openpaper.work.</property>
         <property name="complete">True</property>
         <property name="has_padding">False</property>
       </packing>
+    </child>
+    <child>
+      <placeholder/>
     </child>
     <child>
       <placeholder/>

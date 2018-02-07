@@ -44,6 +44,14 @@ TARGET_PATH = os.getenv("TARGET_PATH", "/scannerdb/post")
 USER_AGENT = "IronScanner"
 
 
+class Greeting(object):
+    def __init__(self, widget_tree):
+        version = util.load_text("version.txt")
+        widget_tree.get_object("ironscannerVersionLabel").set_text(
+            "IronScanner {}".format(version)
+        )
+
+
 class MainForm(object):
     def __init__(self, application, main_loop, widget_tree):
         self.application = application
@@ -770,6 +778,7 @@ def main():
 
         widget_tree = util.load_uifile("mainform.glade")
 
+        Greeting(widget_tree)
         MainForm(application, main_loop, widget_tree)
         user_info = PersonalInfo(widget_tree)
         scan_settings = ScannerSettings(widget_tree)
