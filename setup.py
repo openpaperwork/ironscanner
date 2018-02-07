@@ -6,10 +6,15 @@ from setuptools import (
 )
 
 
-with open("src/ironscanner/version.txt", "r") as file_descriptor:
-    version = file_descriptor.read().strip()
-    if "-" in version:
-        version = version.split("-")[0]
+try:
+    with open("src/ironscanner/version.txt", "r") as file_descriptor:
+        version = file_descriptor.read().strip()
+        if "-" in version:
+            version = version.split("-")[0]
+except FileNotFoundError:
+    print("WARNING: version.txt file is missing")
+    print("WARNING: Please run 'make' first")
+    version = "0.0.1"
 
 
 setup(
