@@ -3,7 +3,6 @@
 import base64
 import http.client
 import io
-import itertools
 import json
 import logging
 import multiprocessing
@@ -11,22 +10,21 @@ import os
 import platform
 import sys
 import threading
-import urllib
-
-import gi
-gi.require_version('Gtk', '3.0')
-from gi.repository import GdkPixbuf
-from gi.repository import GLib
-from gi.repository import Gtk
 
 import PIL
 import psutil
 import pyinsane2
 
-from . import dummy
-from . import log
-from . import trace
-from . import util
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import GdkPixbuf  # noqa: E402
+from gi.repository import GLib  # noqa: E402
+from gi.repository import Gtk  # noqa: E402
+
+from . import dummy  # noqa: E402
+from . import log  # noqa: E402
+from . import trace  # noqa: E402
+from . import util  # noqa: E402
 
 
 logger = logging.getLogger(__name__)
@@ -374,7 +372,8 @@ class ScannerSettings(object):
                 self.widget_tree.get_object('comboboxModes').get_active()
             ][1]
             dev_type = self.widget_tree.get_object('liststoreScannerTypes')[
-                self.widget_tree.get_object('comboboxScannerTypes').get_active()
+                self.widget_tree.get_object('comboboxScannerTypes')
+                .get_active()
             ][1]
         info = {
             "dev_name": "{} {} ({})".format(
@@ -396,7 +395,7 @@ class ScannerSettings(object):
 
         imgpath = self.widget_tree.get_object("filechooserPicture").get_file()
         img = None
-        if imgpath != None:
+        if imgpath is not None:
             try:
                 pil_img = PIL.Image.open(imgpath.get_path())
                 pil_img.load()
@@ -426,7 +425,9 @@ class ScannerSettings(object):
             'type': str(dev_type),
         }
         if img is not None:
-            logger.info("Image attached to report: {}".format(imgpath.get_uri()))
+            logger.info("Image attached to report: {}".format(
+                imgpath.get_uri())
+            )
             report['scanner']['picture'] = img
         else:
             logger.info("No image attached to report")
@@ -459,7 +460,10 @@ class SysInfo(object):
     def get_user_info(self):
         return {
             "sys": "- " + "\n- ".join(
-                ["{}: {}".format(k[4:], v) for (k, v) in self.get_info().items()]
+                [
+                    "{}: {}".format(k[4:], v)
+                    for (k, v) in self.get_info().items()
+                ]
             )
         }
 
@@ -516,7 +520,6 @@ System informations that will be attached to the report:
         logger.info(content)
 
 
-
 class ScanThread(threading.Thread):
     def __init__(self, scanner, settings, progress_cb, result_cb):
         super().__init__(name="Test scan thread")
@@ -571,7 +574,8 @@ class ScanThread(threading.Thread):
                             scan_session.scan.available_lines
                         ))
                         page_nb += 1
-                        self.upd_progression(scan_session.scan.get_image(), 1.0)
+                        self.upd_progression(scan_session.scan.get_image(),
+                                             1.0)
             except StopIteration:
                 logger.info("Got StopIteration")
             logger.info("Scanned {} images".format(len(scan_session.images)))

@@ -28,7 +28,8 @@ class TraceThread(threading.Thread):
                 pass
             else:
                 lineno = frame.f_lineno
-                logger.debug("%s%s:%s()@%d[%s]",
+                logger.debug(
+                    "%s%s:%s()@%d[%s]",
                     "  " * self.depth,
                     filename, frame.f_code.co_name, lineno,
                     threading.current_thread().name
