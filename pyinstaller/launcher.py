@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import multiprocessing
-import os
 import sys
 
 from ironscanner import main
