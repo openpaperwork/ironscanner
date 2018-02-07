@@ -774,8 +774,23 @@ class ReportSender(object):
         self.widget_tree.get_object("linkbuttonOpenReport").set_uri(report_url)
 
 
+def run_pyinsane2_daemon():
+    import pyinsane2.sane.daemon
+    logger.info("Pyinsane2 daemon: %s", str(sys.argv))
+    pyinsane2.sane.daemon.main_loop(sys.argv[3], sys.argv[4:6])
+
+
 def main():
     g_log_tracker.init()
+
+    if getattr(sys, 'frozen', False):
+        pyinsane_daemon = os.getenv('PYINSANE_DAEMON', '1')
+        pyinsane_daemon = False if int(pyinsane_daemon) > 0 else True
+        if pyinsane_daemon:
+            # WORKAROUND for the Pyinsane workaround ... (see Linux/Sane
+            # implementation)
+            run_pyinsane2_daemon()
+            return
 
     logger.info("Initializing pyinsane2 ...")
     trace.trace(pyinsane2.init)

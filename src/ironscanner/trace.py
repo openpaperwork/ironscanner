@@ -22,7 +22,7 @@ class TraceThread(threading.Thread):
     def _trace(self, frame, event, arg):
         filename = frame.f_code.co_filename
         if event == "call":
-            if "/logging/" in filename:
+            if "logging/" in filename:
                 self.ignore += 1
             elif self.ignore > 0:
                 pass
@@ -36,7 +36,7 @@ class TraceThread(threading.Thread):
                 )
             self.depth += 1
         elif event == "return":
-            if "/logging/" in filename:
+            if "logging/" in filename:
                 self.ignore -= 1
             self.depth -= 1
         return self._trace

@@ -32,7 +32,7 @@ def _get_resource_path(filename, pkg="ironscanner"):
         Exception -- if the file is not found.
     """
     if getattr(sys, 'frozen', False):
-        path = os.path.join(sys._MEIPASS, "data", filename)
+        path = os.path.join(sys._MEIPASS, "data", os.path.basename(filename))
         if os.path.exists(path):
             return path
 
