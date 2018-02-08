@@ -34,9 +34,6 @@ logger = logging.getLogger(__name__)
 g_log_tracker = log.LogTracker()
 
 
-__version__ = "1.0"
-
-
 TARGET_PROTOCOL = os.getenv("TARGET_PROTOCOL", "https")
 TARGET_HOST = os.getenv("TARGET_HOST", "openpaper.work")
 TARGET_PATH = os.getenv("TARGET_PATH", "/scannerdb/post")
