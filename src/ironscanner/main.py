@@ -40,16 +40,20 @@ TARGET_PATH = os.getenv("TARGET_PATH", "/scannerdb/post")
 USER_AGENT = "IronScanner"
 
 
+__version__ = "N/A"
+
+
 class Greeting(object):
     def __init__(self, widget_tree):
+        global __version__
         try:
-            version = util.load_text("version.txt")
+            __version__ = util.load_text("version.txt")
         except FileNotFoundError:
             logger.warning("version.txt file is missing")
             logger.warning("Please run 'make' first")
-            version = "unknown"
+            __version__ = "unknown"
         widget_tree.get_object("ironscannerVersionLabel").set_text(
-            "IronScanner {}".format(version)
+            "IronScanner {}".format(__version__)
         )
 
 
