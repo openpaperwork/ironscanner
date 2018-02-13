@@ -35,8 +35,10 @@ uninstall: clean
 	echo "Uninstalling IronScanner"
 	pip3 uninstall -y ironscanner
 
-exe: install_py
-	pyinstaller pyinstaller/ironscanner.spec
+windows_exe:
+
+linux_exe: install_py
+	pyinstaller pyinstaller/linux.spec
 
 release:
 ifeq (${RELEASE}, )
