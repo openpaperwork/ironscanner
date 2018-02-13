@@ -31,11 +31,12 @@ install_py:
 	echo "Installing IronScanner"
 	python3 ./setup.py install ${PIP_ARGS}
 
-uninstall: clean
+uninstall:
 	echo "Uninstalling IronScanner"
 	pip3 uninstall -y ironscanner
 
 windows_exe:
+	pyinstaller pyinstaller/win64.spec
 
 linux_exe: install_py
 	pyinstaller pyinstaller/linux.spec
