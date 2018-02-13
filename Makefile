@@ -1,4 +1,5 @@
 VERSION_FILE = src/ironscanner/version.txt
+PYTHON ?= python3
 
 build: build_py
 
@@ -6,7 +7,7 @@ build_c:
 
 build_py: ${VERSION_FILE}
 	echo "Building IronScanner"
-	python3 ./setup.py build
+	${PYTHON} ./setup.py build
 
 ${VERSION_FILE}:
 	git describe --always >| $@
@@ -29,7 +30,7 @@ install_c:
 
 install_py:
 	echo "Installing IronScanner"
-	python3 ./setup.py install ${PIP_ARGS}
+	${PYTHON} ./setup.py install ${PIP_ARGS}
 
 uninstall:
 	echo "Uninstalling IronScanner"
@@ -53,7 +54,7 @@ else
 	git push origin ${RELEASE}
 	make clean
 	make version
-	python3 ./setup.py sdist upload
+	${PYTHON} ./setup.py sdist upload
 	@echo "All done"
 endif
 
