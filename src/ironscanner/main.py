@@ -274,8 +274,12 @@ class ScannerSettings(object):
         self.widget_tree.get_object("entryManufacturer").set_sensitive(
             scanner is None
         )
-        self.widget_tree.get_object("labelModel").set_sensitive(scanner is None)
-        self.widget_tree.get_object("entryModel").set_sensitive(scanner is None)
+        self.widget_tree.get_object("labelModel").set_sensitive(
+            scanner is None
+        )
+        self.widget_tree.get_object("entryModel").set_sensitive(
+            scanner is None
+        )
         self.widget_tree.get_object("entryManufacturer").set_text(
             scanner.vendor if scanner is not None else ""
         )
@@ -291,7 +295,8 @@ class ScannerSettings(object):
             GLib.idle_add(self._scroll_down)
 
     def _scroll_down(self):
-        vadj = self.widget_tree.get_object("pageTestSettings").get_vadjustment()
+        vadj = self.widget_tree.get_object(
+            "pageTestSettings").get_vadjustment()
         vadj.set_value(vadj.get_upper())
 
     def _on_scanner_selected(self, combobox):
