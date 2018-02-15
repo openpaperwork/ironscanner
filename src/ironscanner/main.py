@@ -77,17 +77,17 @@ class LogHandler(logging.Handler):
     MAX_DISPLAYED_LINES = 1000
     MAX_MEM_LINES = 10000
 
-    def __init__(self, txt_buffer, scrollbars,
-                 base_level=logging.INFO,
-                 buffer_level=logging.INFO):
+    def __init__(self, txt_buffer=None, scrollbars=None,
+                 log_level=logging.INFO):
         super().__init__()
         self._formatter = logging.Formatter('%(levelname)-6s %(message)s')
         self.output_lines = []
-        self.buffer_lines = []
         self.buf = txt_buffer
-        self.scrollbar = scrollbars.get_vadjustment()
-        self.base_level = base_level
-        self.buffer_level = buffer_level
+        if scrollbars is not None:
+            self.scrollbar = scrollbars.get_vadjustment()
+        else:
+            self.scrollbar = None
+        self.log_level = log_level
 
     def enable(self):
         l = logging.getLogger()
@@ -99,22 +99,18 @@ class LogHandler(logging.Handler):
         l.removeHandler(self)
 
     def emit(self, record):
-        if record.levelno < self.base_level:
+        if record.levelno < self.log_level:
             return
         line = self._formatter.format(record)
         self.output_lines.append(line)
         if len(self.output_lines) > self.MAX_MEM_LINES:
             self.output_lines.pop(0)
 
-        if record.levelno < self.buffer_level:
-            return
-        self.buffer_lines.append(line)
-        if len(self.buffer_lines) > self.MAX_DISPLAYED_LINES:
-            self.buffer_lines.pop(0)
-        GLib.idle_add(self._update_buffer)
+        if self.buf is not None:
+            GLib.idle_add(self._update_buffer)
 
     def _update_buffer(self):
-        self.buf.set_text("\n".join(self.buffer_lines))
+        self.buf.set_text("\n".join(self.output_lines))
         self.scrollbar.set_value(self.scrollbar.get_upper())
 
     def get_logs(self):
@@ -291,6 +287,12 @@ class ScannerSettings(object):
             self.widget_tree.get_object("expanderScannerInfo").set_expanded(
                 True
             )
+            self.widget_tree.get_object("entryManufacturer").grab_focus()
+            GLib.idle_add(self._scroll_down)
+
+    def _scroll_down(self):
+        vadj = self.widget_tree.get_object("pageTestSettings").get_vadjustment()
+        vadj.set_value(vadj.get_upper())
 
     def _on_scanner_selected(self, combobox):
         scanner = self.get_scanner()
@@ -650,13 +652,12 @@ class ScanTest(object):
         self.log_handler = LogHandler(
             widget_tree.get_object("textbufferOnTheFly"),
             widget_tree.get_object("scrolledwindowOnTheFly"),
-            base_level=logging.DEBUG,
-            buffer_level=logging.INFO,
+            log_level=logging.INFO,
         )
         self.last_img = None
 
     def __str__(self):
-        return "Scan test traces and results"
+        return "Scan test result"
 
     def _on_assistant_page_prepare(self, assistant, page):
         if page is not self.widget_tree.get_object("pageTestScan"):
@@ -693,14 +694,6 @@ class ScanTest(object):
     def complete_report(self, report):
         if 'scantest' not in report:
             report['scantest'] = {}
-
-        traces = ""
-        try:
-            logs = "\n".join(self.log_handler.get_logs())
-            traces = base64.encodebytes(logs.encode("utf-8")).decode("utf-8")
-        except Exception as exc:
-            traces = "(Exception: {})".format(str(exc))
-        report['scantest']['traces'] = traces
 
         image = "(none)"
         try:
@@ -797,8 +790,7 @@ class ReportSender(object):
         self.log_handler = LogHandler(
             widget_tree.get_object("textbufferSendingReport"),
             widget_tree.get_object("scrolledwindowSendingResults"),
-            base_level=logging.DEBUG,
-            buffer_level=logging.INFO,
+            log_level=logging.INFO,
         )
 
     def _on_assistant_page_prepare(self, assistant, page):
@@ -862,6 +854,7 @@ def main():
 
         ReportSender(widget_tree, [
             user_info, scan_settings, sys_info, scan_test, user_comment,
+            g_log_tracker,
         ])
 
         application.register()

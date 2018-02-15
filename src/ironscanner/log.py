@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import base64
 import logging
 import sys
 
@@ -7,9 +8,9 @@ logger = logging.getLogger(__name__)
 
 
 class LogTracker(logging.Handler):
-    # Assuming 1KB per line, it makes about 50MB of RAM
+    # Assuming 1KB per line, it makes about 512MB of RAM
     # (+ memory allocator overhead)
-    MAX_LINES = 50 * 1000
+    MAX_LINES = 512 * 1000
     LOG_LEVELS = {
         "DEBUG": logging.DEBUG,
         "INFO": logging.INFO,
@@ -50,3 +51,13 @@ class LogTracker(logging.Handler):
         logger.addHandler(self)
         sys.excepthook = self.on_uncatched_exception_cb
         logger.setLevel(logging.DEBUG)
+
+    def complete_report(self, report):
+        traces = ""
+        try:
+            logs = self.get_logs()
+            traces = base64.encodebytes(logs.encode("utf-8")).decode("utf-8")
+        except Exception as exc:
+            traces = "(Exception: {})".format(str(exc))
+            logger.error("Exception while encoding traces", exc_info=exc)
+        report['traces'] = traces
