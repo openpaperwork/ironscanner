@@ -1,6 +1,7 @@
 VERSION_FILE = src/ironscanner/version.txt
 PYTHON ?= python3
 
+
 build: build_py
 
 build_c:
