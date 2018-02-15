@@ -479,7 +479,7 @@ class SysInfo(object):
         try:
             report['system']['versions'] = {
                 'pillow': PIL.__version__,
-                'pyinsane2': pyinsane2.__version__,
+                'scan_library': "pyinsane2 " + pyinsane2.__version__,
                 'ironscanner': __version__,
             }
         except Exception as exc:
