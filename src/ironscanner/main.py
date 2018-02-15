@@ -317,6 +317,17 @@ class ScannerSettings(object):
             combobox.set_active(0)
             label.set_sensitive(True)
 
+        self.widget_tree.get_object("labelManufacturer").set_sensitive(False)
+        self.widget_tree.get_object("entryManufacturer").set_sensitive(False)
+        self.widget_tree.get_object("labelModel").set_sensitive(False)
+        self.widget_tree.get_object("entryModel").set_sensitive(False)
+        self.widget_tree.get_object("entryManufacturer").set_text(
+            scanner.vendor
+        )
+        self.widget_tree.get_object("entryModel").set_text(
+            scanner.model
+        )
+
     def _on_scanner_type_selected(self, combobox):
         types = self.widget_tree.get_object("liststoreScannerTypes")
         img_file = types[combobox.get_active()][2]
