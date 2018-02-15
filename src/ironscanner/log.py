@@ -61,3 +61,6 @@ class LogTracker(logging.Handler):
             traces = "(Exception: {})".format(str(exc))
             logger.error("Exception while encoding traces", exc_info=exc)
         report['traces'] = traces
+
+    def __str__(self):
+        return "Traces"
