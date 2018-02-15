@@ -209,6 +209,7 @@ class ScannerSettings(object):
 
         liststore = self.widget_tree.get_object("liststoreDevices")
         liststore.clear()
+        self.scanners = {}
         for scanner in scanners:
             username = "{} {} ({})".format(
                 scanner.vendor, scanner.model, scanner.nice_name
@@ -216,6 +217,9 @@ class ScannerSettings(object):
             self.scanners[scanner.name] = scanner
             logger.info("{} -> {}".format(scanner.name, username))
             liststore.append((username, scanner.name))
+
+        liststore.append(("Not in the list", None))
+
         combobox = self.widget_tree.get_object("comboboxDevices")
         combobox.set_model(liststore)
         combobox.set_sensitive(True)
@@ -244,8 +248,56 @@ class ScannerSettings(object):
             interval = new_interval
         return range(resolutions[0], resolutions[1] + 1, interval)
 
+    def _set_scanner_selected(self, scanner=None):
+        lists = [
+            (
+                self.widget_tree.get_object("comboboxSources"),
+                self.widget_tree.get_object("liststoreSources"),
+                self.widget_tree.get_object("labelSources"),
+            ),
+            (
+                self.widget_tree.get_object("comboboxResolutions"),
+                self.widget_tree.get_object("liststoreResolutions"),
+                self.widget_tree.get_object("labelResolutions"),
+            ),
+            (
+                self.widget_tree.get_object("comboboxModes"),
+                self.widget_tree.get_object("liststoreModes"),
+                self.widget_tree.get_object("labelModes"),
+            ),
+        ]
+        for (combobox, liststore, label) in lists:
+            combobox.set_model(liststore)
+            combobox.set_sensitive(scanner is not None)
+            combobox.set_active(0)
+            label.set_sensitive(scanner is not None)
+
+        self.widget_tree.get_object("labelManufacturer").set_sensitive(
+            scanner is None
+        )
+        self.widget_tree.get_object("entryManufacturer").set_sensitive(
+            scanner is None
+        )
+        self.widget_tree.get_object("labelModel").set_sensitive(scanner is None)
+        self.widget_tree.get_object("entryModel").set_sensitive(scanner is None)
+        self.widget_tree.get_object("entryManufacturer").set_text(
+            scanner.vendor if scanner is not None else ""
+        )
+        self.widget_tree.get_object("entryModel").set_text(
+            scanner.model if scanner is not None else ""
+        )
+
+        if scanner is None:
+            self.widget_tree.get_object("expanderScannerInfo").set_expanded(
+                True
+            )
+
     def _on_scanner_selected(self, combobox):
         scanner = self.get_scanner()
+
+        self._set_scanner_selected(scanner)
+        if scanner is None:
+            return
 
         logger.info("Selected scanner: {}".format(scanner.name))
 
@@ -294,40 +346,6 @@ class ScannerSettings(object):
         for mode in scanner.options['mode'].constraint:
             modes.append((mode, mode))
 
-        lists = [
-            (
-                self.widget_tree.get_object("comboboxSources"),
-                self.widget_tree.get_object("liststoreSources"),
-                self.widget_tree.get_object("labelSources"),
-            ),
-            (
-                self.widget_tree.get_object("comboboxResolutions"),
-                self.widget_tree.get_object("liststoreResolutions"),
-                self.widget_tree.get_object("labelResolutions"),
-            ),
-            (
-                self.widget_tree.get_object("comboboxModes"),
-                self.widget_tree.get_object("liststoreModes"),
-                self.widget_tree.get_object("labelModes"),
-            ),
-        ]
-        for (combobox, liststore, label) in lists:
-            combobox.set_model(liststore)
-            combobox.set_sensitive(True)
-            combobox.set_active(0)
-            label.set_sensitive(True)
-
-        self.widget_tree.get_object("labelManufacturer").set_sensitive(False)
-        self.widget_tree.get_object("entryManufacturer").set_sensitive(False)
-        self.widget_tree.get_object("labelModel").set_sensitive(False)
-        self.widget_tree.get_object("entryModel").set_sensitive(False)
-        self.widget_tree.get_object("entryManufacturer").set_text(
-            scanner.vendor
-        )
-        self.widget_tree.get_object("entryModel").set_text(
-            scanner.model
-        )
-
     def _on_scanner_type_selected(self, combobox):
         types = self.widget_tree.get_object("liststoreScannerTypes")
         img_file = types[combobox.get_active()][2]
@@ -344,12 +362,17 @@ class ScannerSettings(object):
                                          GdkPixbuf.InterpType.BILINEAR)
             img_widget.set_from_pixbuf(pixbuf)
 
-    def get_scanner(self):
+    def get_scanner_id(self):
         liststore = self.widget_tree.get_object("liststoreDevices")
         active = self.widget_tree.get_object("comboboxDevices").get_active()
         if active < 0 or active >= len(liststore):
             return dummy.DummyScanner()
-        devid = liststore[active][1]
+        return liststore[active][1]
+
+    def get_scanner(self):
+        devid = self.get_scanner_id()
+        if devid is None:
+            return devid
         scanner = self.scanners[devid]
         return scanner
 
@@ -390,10 +413,15 @@ class ScannerSettings(object):
                 self.widget_tree.get_object('comboboxScannerTypes')
                 .get_active()
             ][1]
+        vendor = self.widget_tree.get_object("entryManufacturer").get_text()
+        model = self.widget_tree.get_object("entryModel").get_text()
+        nice_name = (
+            scanner.nice_name
+            if scanner is not None else
+            "{} {}".format(vendor, model)
+        )
         info = {
-            "dev_name": "{} {} ({})".format(
-                scanner.vendor, scanner.model, scanner.nice_name
-            ),
+            "dev_name": "{} {} ({})".format(vendor, model, nice_name),
             "dev_source": src,
             "dev_resolution": resolution,
             "dev_mode": mode,
@@ -429,14 +457,19 @@ class ScannerSettings(object):
         ][1]
 
         scanner = self.get_scanner()
+        vendor = self.widget_tree.get_object("entryManufacturer").get_text()
+        model = self.widget_tree.get_object("entryModel").get_text()
+        nice_name = (
+            scanner.nice_name
+            if scanner is not None else
+            "{} {}".format(vendor, model)
+        )
         report['scanner'] = {
-            'vendor': scanner.vendor,
-            'model': scanner.model,
-            'nicename': scanner.nice_name,
-            'devid': scanner.name,
-            'fullname': "{} {} ({})".format(
-                scanner.vendor, scanner.model, scanner.nice_name
-            ),
+            'vendor': vendor,
+            'model': model,
+            'nicename': nice_name,
+            'devid': scanner.name if scanner is not None else "unknown",
+            'fullname': "{} {} ({})".format(vendor, model, nice_name),
             'type': str(dev_type),
         }
         if img is not None:
@@ -513,9 +546,10 @@ System informations that will be attached to the report:
 {sys}
     """
 
-    def __init__(self, widget_tree, sources):
+    def __init__(self, widget_tree, settings, sources):
         self.widget_tree = widget_tree
         self.sources = sources
+        self.settings = settings
 
         widget_tree.get_object("mainform").connect(
             "prepare", self._on_assistant_page_prepare
@@ -523,6 +557,10 @@ System informations that will be attached to the report:
 
     def _on_assistant_page_prepare(self, assistant, page):
         if page is not self.widget_tree.get_object("pageSummary"):
+            return
+        if self.settings.get_scanner_id() is None:
+            # skip the test scan and the result questions
+            assistant.set_current_page(assistant.get_current_page() + 4)
             return
         logger.info("Preparing summary")
         values = {}
@@ -817,7 +855,8 @@ def main():
         user_info = PersonalInfo(widget_tree)
         scan_settings = ScannerSettings(widget_tree)
         sys_info = SysInfo()
-        TestSummary(widget_tree, [user_info, scan_settings, sys_info])
+        TestSummary(widget_tree, scan_settings,
+                    [user_info, scan_settings, sys_info])
         scan_test = ScanTest(widget_tree, scan_settings)
         user_comment = UserComment(widget_tree)
 
