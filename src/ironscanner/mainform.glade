@@ -73,12 +73,12 @@
       <row>
         <col id="0" translatable="yes">Automatic Document Feeder</col>
         <col id="1" translatable="yes">adf</col>
-        <col id="2" translatable="yes"/>
+        <col id="2" translatable="yes">adf.png</col>
       </row>
       <row>
         <col id="0" translatable="yes">Duplex Automatic Document Feeder</col>
         <col id="1" translatable="yes">adf_duplex</col>
-        <col id="2" translatable="yes"/>
+        <col id="2" translatable="yes">adf.png</col>
       </row>
       <row>
         <col id="0" translatable="yes">Handheld scanner</col>
@@ -1125,6 +1125,9 @@ Ready to send the results to Openpaper.work.</property>
         <property name="complete">True</property>
         <property name="has_padding">False</property>
       </packing>
+    </child>
+    <child>
+      <placeholder/>
     </child>
     <child>
       <placeholder/>
