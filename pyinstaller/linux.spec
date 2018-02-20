@@ -56,6 +56,6 @@ exe = EXE(pyz,
           name='ironscanner',
           debug=True,
           strip=False,
-          upx=True,
+          upx=False,
           runtime_tmpdir=None,
           console=True)

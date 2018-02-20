@@ -2,7 +2,23 @@
 
 ![Logo](src/ironscanner/logo.png)
 
-Collect as much information as possible on image scanners
+Collect as much information as possible on image scanners and send it to [OpenPaper.work](https://openpaper.work/).
+
+
+## Linux
+
+```sh
+cd /tmp
+wget https://download.openpaper.work/linux/amd64/ironscanner/latest/ironscanner
+chmod +x /tmp/ironscanner
+./ironscanner
+```
+
+
+## Windows
+
+[Download](https://download.openpaper.work/windows/amd64/ironscanner.exe) and run.
+
 
 ## Development
 
