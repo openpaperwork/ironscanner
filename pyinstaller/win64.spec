@@ -6,6 +6,10 @@ import sys
 
 block_cipher = None
 
+SIGNTOOL_EXE = "c:\\Program Files\\Microsoft SDKs\\Windows\\v7.1\\Bin\\signtool.exe"
+PATH_PFX="c:\\users\\jflesch\\cert\\openpaper.pfx"
+TIMESTAMP_URL = "http://timestamp.verisign.com/scripts/timestamp.dll"
+
 BASE_PATH = os.getcwd()
 
 # Pyinstaller misses some .dll (GObject & co) --> we have to request them
@@ -76,9 +80,25 @@ exe = EXE(
     a.binaries,
     a.zipfiles,
     a.datas,
-    name='ironscanner',
+    name='ironscanner.exe',
     debug=True,
     strip=False,
     upx=False,
     console=True
 )
+
+if not os.path.exists(PATH_PFX):
+    print ("No certifcate for signing")
+else:
+    import subprocess
+    print("Signtool")
+    print(SIGNTOOL_EXE)
+    print(PATH_PFX)
+    print(TIMESTAMP_URL)
+    subprocess.call([
+        SIGNTOOL_EXE,
+        "sign",
+        "/F", PATH_PFX,
+        "/T", TIMESTAMP_URL,
+        "dist\\ironscanner.exe"
+    ])
