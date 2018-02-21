@@ -353,9 +353,15 @@ class ScannerSettings(object):
         for resolution in self._get_resolutions(
                     scanner.options['resolution'].constraint
                 ):
-            resolutions.append((str(resolution), resolution))
+            txt = str(resolution)
+            if resolution == 150:
+                txt += " (recommended)"
+            resolutions.append((txt, resolution))
         for mode in scanner.options['mode'].constraint:
-            modes.append((mode, mode))
+            txt = mode
+            if mode.lower() == "color":
+                txt += " (recommended)"
+            modes.append((txt, mode))
 
     def _on_scanner_type_selected(self, combobox):
         types = self.widget_tree.get_object("liststoreScannerTypes")
