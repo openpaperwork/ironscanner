@@ -28,7 +28,7 @@ install: install_py
 
 install_c:
 
-install_py:
+install_py: ${VERSION_FILE}
 	echo "Installing IronScanner"
 	${PYTHON} ./setup.py install ${PIP_ARGS}
 
