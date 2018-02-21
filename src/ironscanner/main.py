@@ -15,14 +15,18 @@ import PIL
 import psutil
 import pyinsane2
 
-from gi.repository import GdkPixbuf
-from gi.repository import GLib
-from gi.repository import Gtk
+import gi
+gi.require_version('GdkPixbuf', '2.0')
+gi.require_version('Gtk', '3.0')
 
-from . import dummy
-from . import log
-from . import trace
-from . import util
+from gi.repository import GdkPixbuf  # noqa: E402
+from gi.repository import GLib  # noqa: E402
+from gi.repository import Gtk  # noqa: E402
+
+from . import dummy  # noqa: E402
+from . import log  # noqa: E402
+from . import trace  # noqa: E402
+from . import util  # noqa: E402
 
 
 logger = logging.getLogger(__name__)
@@ -873,8 +877,4 @@ def main():
 
 
 if __name__ == "__main__":
-    import gi
-    gi.require_version('GdkPixbuf', '2.0')
-    gi.require_version('Gtk', '3.0')
-
     main()
