@@ -532,7 +532,7 @@ class SysInfo(object):
             report['system']['versions'] = {
                 'pillow': PIL.__version__,
                 'scan_library': "pyinsane2 " + pyinsane2.__version__,
-                'ironscanner': __version__,
+                'test_program': "ironscanner " + __version__,
             }
         except Exception as exc:
             logger.warning("Failed to get python module version: {}".format(
