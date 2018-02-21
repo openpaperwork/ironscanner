@@ -37,10 +37,10 @@ uninstall:
 	pip3 uninstall -y ironscanner
 
 windows_exe:
-	pyinstaller pyinstaller/win64.spec
+	pyinstaller --noconfirm pyinstaller/win64.spec
 
 linux_exe: install_py
-	pyinstaller pyinstaller/linux.spec
+	pyinstaller --noconfirm pyinstaller/linux.spec
 
 release:
 ifeq (${RELEASE}, )
