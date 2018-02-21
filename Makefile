@@ -15,6 +15,7 @@ ${VERSION_FILE}:
 version: ${VERSION_FILE}
 
 clean:
+	rm -rf build dist
 	rm -f src/ironscanner/version.txt
 
 doc:
