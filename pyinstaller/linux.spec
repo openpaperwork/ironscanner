@@ -7,6 +7,8 @@ block_cipher = None
 
 BASE_PATH = os.getcwd()
 
+print("BASEPATH: {}".format(BASE_PATH))
+
 datas = []
 for (dirpath, subdirs, filenames) in os.walk(BASE_PATH):
     if ("dist" in dirpath.lower()
@@ -30,8 +32,8 @@ for (dirpath, subdirs, filenames) in os.walk(BASE_PATH):
         filepath = os.path.join(dirpath, filename)
 
         dest = "data"
-        sys.stderr.write(
-            "=== Adding file [{}] --> [{}] ===\n".format(filepath, dest)
+        print(
+            "=== Adding file [{}] --> [{}] ===".format(filepath, dest)
         )
         datas.append((filepath, dest))
 
