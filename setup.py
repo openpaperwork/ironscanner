@@ -39,7 +39,7 @@ setup(
     keywords="scanner gui",
     url="https://github.com/openpaperwork/ironscanner",
     download_url=("https://github.com/openpaperwork/ironscanner"
-                  "/archive/1.0.tar.gz"),
+                  "/archive/{}.tar.gz".format(version)),
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Environment :: X11 Applications :: GTK",
