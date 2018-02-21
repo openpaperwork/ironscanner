@@ -8,6 +8,7 @@ block_cipher = None
 
 SIGNTOOL_EXE = "c:\\Program Files\\Microsoft SDKs\\Windows\\v7.1\\Bin\\signtool.exe"
 PATH_PFX="c:\\users\\jflesch\\cert\\openpaper.pfx"
+PFX_PASSWORD="1234"
 TIMESTAMP_URL = "http://timestamp.verisign.com/scripts/timestamp.dll"
 
 BASE_PATH = os.getcwd()
@@ -100,6 +101,7 @@ else:
         SIGNTOOL_EXE,
         "sign",
         "/F", PATH_PFX,
+        "/P", PFX_PASSWORD,
         "/T", TIMESTAMP_URL,
         "dist\\ironscanner.exe"
     ])
