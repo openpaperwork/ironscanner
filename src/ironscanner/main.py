@@ -40,7 +40,7 @@ TARGET_PROTOCOL = os.getenv("TARGET_PROTOCOL", "https")
 TARGET_HOST = os.getenv("TARGET_HOST", "openpaper.work")
 TARGET_PATH = os.getenv("TARGET_PATH", "/scannerdb/post")
 USER_AGENT = "IronScanner"
-SSL_CONTEXT = ssl.create_default_context()
+SSL_CONTEXT = ssl._create_unverified_context()
 
 __version__ = "N/A"
 
