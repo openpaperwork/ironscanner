@@ -394,15 +394,26 @@ class ScannerSettings(object):
         return scanner
 
     def get_scanner_config(self):
+        source_idx = (
+            self.widget_tree.get_object('comboboxSources').get_active()
+        )
+        resolution_idx = (
+            self.widget_tree.get_object('comboboxResolutions').get_active()
+        )
+        mode_idx = (
+            self.widget_tree.get_object('comboboxModes').get_active()
+        )
+        if source_idx < 0 or resolution_idx < 0 or mode_idx < 0:
+            return {}
         return {
             'source': self.widget_tree.get_object('liststoreSources')[
-                self.widget_tree.get_object('comboboxSources').get_active()
+                source_idx
             ][1],
             'resolution': self.widget_tree.get_object('liststoreResolutions')[
-                self.widget_tree.get_object('comboboxResolutions').get_active()
+                resolution_idx
             ][1],
             'mode': self.widget_tree.get_object('liststoreModes')[
-                self.widget_tree.get_object('comboboxModes').get_active()
+                mode_idx
             ][1],
         }
 
