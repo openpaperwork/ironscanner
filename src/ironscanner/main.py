@@ -798,7 +798,7 @@ class ReportSenderThread(threading.Thread):
                 host=TARGET_HOST, context=SSL_CONTEXT
             )
         logger.info("Posting report...")
-        logger.info("Please wait...")
+        logger.info("Please wait, this may take a while...")
         connection.request("POST", url=TARGET_PATH, headers={
             "Content-type": "application/json",
             "Accept": "application/json",
