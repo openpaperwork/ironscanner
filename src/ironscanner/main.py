@@ -277,24 +277,24 @@ class ScannerSettings(object):
             combobox.set_active(0)
             label.set_sensitive(scanner is not None)
 
-        self.widget_tree.get_object("labelManufacturer").set_sensitive(
-            scanner is None
-        )
-        self.widget_tree.get_object("entryManufacturer").set_sensitive(
-            scanner is None
-        )
-        self.widget_tree.get_object("labelModel").set_sensitive(
-            scanner is None
-        )
-        self.widget_tree.get_object("entryModel").set_sensitive(
-            scanner is None
-        )
-        self.widget_tree.get_object("entryManufacturer").set_text(
-            scanner.vendor if scanner is not None else ""
-        )
-        self.widget_tree.get_object("entryModel").set_text(
-            scanner.model if scanner is not None else ""
-        )
+        self.widget_tree.get_object("labelManufacturer").set_sensitive(True)
+        self.widget_tree.get_object("entryManufacturer").set_sensitive(True)
+        self.widget_tree.get_object("labelModel").set_sensitive(True)
+        self.widget_tree.get_object("entryModel").set_sensitive(True)
+
+        vendor = scanner.vendor if scanner is not None else ""
+        self.widget_tree.get_object("entryManufacturer").set_text(vendor)
+
+        if scanner is None:
+            model = ""
+        else:
+            model = scanner.model
+            # fix some WIA crap
+            if model.startswith(vendor):
+                model = model[len(vendor):].strip()
+                model = model.split(" ")[0]
+
+        self.widget_tree.get_object("entryModel").set_text(model)
 
         if scanner is None:
             self.widget_tree.get_object("expanderScannerInfo").set_expanded(
