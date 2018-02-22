@@ -103,6 +103,10 @@ class LogHandler(logging.Handler):
         l = logging.getLogger()
         l.removeHandler(self)
 
+    def validate(self):
+        self.output_lines.append("All done !")
+        GLib.idle_add(self._update_buffer)
+
     def emit(self, record):
         if record.levelno < self.log_level:
             return
@@ -725,6 +729,7 @@ class ScanTest(object):
             self.widget_tree.get_object("pageTestScan"),
             True
         )
+        self.log_handler.validate()
 
     def complete_report(self, report):
         if 'scantest' not in report:
@@ -848,6 +853,7 @@ class ReportSender(object):
             report_url
         )
         self.widget_tree.get_object("linkbuttonOpenReport").set_uri(report_url)
+        self.log_handler.validate()
 
 
 def run_pyinsane2_daemon():
