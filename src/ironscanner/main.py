@@ -36,6 +36,8 @@ logger = logging.getLogger(__name__)
 g_log_tracker = log.LogTracker()
 
 
+
+
 TARGET_PROTOCOL = os.getenv("TARGET_PROTOCOL", "https")
 TARGET_HOST = os.getenv("TARGET_HOST", "openpaper.work")
 TARGET_PATH = os.getenv("TARGET_PATH", "/scannerdb/post")
@@ -516,13 +518,18 @@ class SysInfo(object):
         return "System configuration"
 
     def get_info(self):
+        try:
+            uname = os.uname()
+        except Exception as exc;
+            logger.warning("Failed to get uname", exc_info=exc)
+            uname = "unknown"
         return {
             'sys_arch': platform.architecture(),
             'sys_cpu_freq': int(psutil.cpu_freq().max),
             'sys_machine': platform.machine(),
             'sys_mem': int(psutil.virtual_memory().total),
             'sys_nb_cpus': multiprocessing.cpu_count(),
-            'sys_os_uname': os.uname(),
+            'sys_os_uname': uname,
             'sys_platform_detailed': platform.platform(),
             'sys_platform_short': sys.platform,
             'sys_platform_uname': platform.uname(),
