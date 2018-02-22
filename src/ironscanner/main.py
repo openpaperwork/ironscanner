@@ -36,8 +36,6 @@ logger = logging.getLogger(__name__)
 g_log_tracker = log.LogTracker()
 
 
-
-
 TARGET_PROTOCOL = os.getenv("TARGET_PROTOCOL", "https")
 TARGET_HOST = os.getenv("TARGET_HOST", "openpaper.work")
 TARGET_PATH = os.getenv("TARGET_PATH", "/scannerdb/post")
@@ -555,7 +553,10 @@ class SysInfo(object):
         report['system'] = self.get_info()
         try:
             report['system']['versions'] = {
-                'pillow': "unknown" if not hasattr(PIL, "__version__") else PIL.__version__,
+                'pillow': (
+                    "unknown" if not hasattr(PIL, "__version__")
+                    else PIL.__version__
+                ),
                 'scan_library': "pyinsane2 " + pyinsane2.__version__,
                 'test_program': "ironscanner " + __version__,
             }
@@ -788,7 +789,9 @@ class ReportSenderThread(threading.Thread):
         if TARGET_PROTOCOL == "http":
             connection = http.client.HTTPConnection(host=TARGET_HOST)
         else:
-            connection = http.client.HTTPSConnection(host=TARGET_HOST, context=SSL_CONTEXT)
+            connection = http.client.HTTPSConnection(
+                host=TARGET_HOST, context=SSL_CONTEXT
+            )
         logger.info("Posting report ...")
         connection.request("POST", url=TARGET_PATH, headers={
             "Content-type": "application/json",
