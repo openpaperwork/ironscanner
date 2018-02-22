@@ -555,7 +555,7 @@ class SysInfo(object):
         report['system'] = self.get_info()
         try:
             report['system']['versions'] = {
-                'pillow': PIL.__version__,
+                'pillow': "unknown" if not hasattr(PIL, "__version__") else PIL.__version__,
                 'scan_library': "pyinsane2 " + pyinsane2.__version__,
                 'test_program': "ironscanner " + __version__,
             }
