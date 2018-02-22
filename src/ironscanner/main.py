@@ -520,7 +520,7 @@ class SysInfo(object):
     def get_info(self):
         try:
             uname = os.uname()
-        except Exception as exc;
+        except Exception as exc:
             logger.warning("Failed to get uname", exc_info=exc)
             uname = "unknown"
         return {
