@@ -8,6 +8,7 @@ import logging
 import multiprocessing
 import os
 import platform
+import ssl
 import sys
 import threading
 
@@ -39,7 +40,7 @@ TARGET_PROTOCOL = os.getenv("TARGET_PROTOCOL", "https")
 TARGET_HOST = os.getenv("TARGET_HOST", "openpaper.work")
 TARGET_PATH = os.getenv("TARGET_PATH", "/scannerdb/post")
 USER_AGENT = "IronScanner"
-
+SSL_CONTEXT = ssl.create_default_context()
 
 __version__ = "N/A"
 
@@ -780,7 +781,7 @@ class ReportSenderThread(threading.Thread):
         if TARGET_PROTOCOL == "http":
             connection = http.client.HTTPConnection(host=TARGET_HOST)
         else:
-            connection = http.client.HTTPSConnection(host=TARGET_HOST)
+            connection = http.client.HTTPSConnection(host=TARGET_HOST, context=SSL_CONTEXT)
         logger.info("Posting report ...")
         connection.request("POST", url=TARGET_PATH, headers={
             "Content-type": "application/json",
