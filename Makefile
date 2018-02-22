@@ -53,9 +53,6 @@ else
 	@echo "Releasing ..."
 	git tag -a ${RELEASE} -m ${RELEASE}
 	git push origin ${RELEASE}
-	make clean
-	make version
-	${PYTHON} ./setup.py sdist upload
 	@echo "All done"
 endif
 
