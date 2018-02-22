@@ -150,15 +150,15 @@ class PersonalInfo(object):
 
     def _on_accept_contact_changed(self, button):
         widgets = [
-            self.widget_tree.get_object("labelUserName"),
-            self.widget_tree.get_object("entryUserName"),
-            self.widget_tree.get_object("labelUserEmail"),
-            self.widget_tree.get_object("entryUserEmail"),
+            (self.widget_tree.get_object("labelUserName"), False),
+            (self.widget_tree.get_object("entryUserName"), True),
+            (self.widget_tree.get_object("labelUserEmail"), False),
+            (self.widget_tree.get_object("entryUserEmail"), True),
         ]
-        for widget in widgets:
+        for (widget, clear) in widgets:
             sensitive = not widget.get_sensitive()
             widget.set_sensitive(sensitive)
-            if not sensitive:
+            if clear and not sensitive:
                 widget.set_text("")
 
     def get_user_info(self):
