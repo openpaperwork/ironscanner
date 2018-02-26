@@ -15,8 +15,7 @@ import threading
 import PIL
 import psutil
 
-os.environ['PYINSANE_SINGLE_THREAD'] = "1"
-import pyinsane2  # noqa: E402
+import pyinsane2
 
 import gi  # noqa: E402
 gi.require_version('GdkPixbuf', '2.0')
