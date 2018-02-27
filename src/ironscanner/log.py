@@ -44,8 +44,14 @@ class LogTracker(logging.Handler):
         )
 
     def init(self):
+        class StreamHandler(logging.StreamHandler):
+            def emit(self, record):
+                if record.levelno < logging.INFO:
+                    return
+                super().emit(record)
+
         logger = logging.getLogger()
-        handler = logging.StreamHandler()
+        handler = StreamHandler()
         handler.setFormatter(self._formatter)
         logger.addHandler(handler)
         logger.addHandler(self)
