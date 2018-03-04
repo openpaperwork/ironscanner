@@ -740,7 +740,9 @@ class ScanTest(object):
             self.widget_tree.get_object("pageTestScan"),
             True
         )
-        self.widget_tree.get_object("radiobuttonScanSuccessful").set_sensitive(ok)
+        self.widget_tree.get_object(
+            "radiobuttonScanSuccessful"
+        ).set_sensitive(ok)
         self.log_handler.validate()
 
     def complete_report(self, report):
