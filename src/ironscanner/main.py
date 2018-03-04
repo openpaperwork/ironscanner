@@ -369,6 +369,15 @@ class ScannerSettings(object):
                 txt += " (recommended)"
             modes.append((txt, mode))
 
+        GLib.idle_add(
+            self.widget_tree.get_object('comboboxSources').set_active, 0
+        )
+        GLib.idle_add(
+            self.widget_tree.get_object('comboboxResolutions').set_active, 0
+        )
+        GLib.idle_add(
+            self.widget_tree.get_object('comboboxModes').set_active, 0
+        )
 
     def _on_scanner_type_selected(self, combobox):
         types = self.widget_tree.get_object("liststoreScannerTypes")
