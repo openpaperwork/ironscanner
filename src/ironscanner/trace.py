@@ -16,29 +16,17 @@ class TraceThread(threading.Thread):
         self.end_func = end_func
         self.ret = None
         self.exc = None
-        self.depth = 0
-        self.ignore = 0
 
     def _trace(self, frame, event, arg):
-        filename = frame.f_code.co_filename
         if event == "call":
-            if "logging/" in filename or "logging\\" in filename:
-                self.ignore += 1
-            elif self.ignore > 0:
-                pass
-            else:
-                lineno = frame.f_lineno
-                logger.debug(
-                    "%s%s:%s()@%d[%s]",
-                    "  " * self.depth,
-                    filename, frame.f_code.co_name, lineno,
-                    threading.current_thread().name
-                )
-            self.depth += 1
-        elif event == "return":
-            if "logging/" in filename or "logging\\" in filename:
-                self.ignore -= 1
-            self.depth -= 1
+            sys.settrace(None)
+            filename = frame.f_code.co_filename
+            lineno = frame.f_lineno
+            logger.debug(
+                "%s:%s()@%d[%s]",
+                filename, frame.f_code.co_name, lineno,
+                threading.current_thread().name
+            )
         return self._trace
 
     def run(self):
@@ -51,7 +39,9 @@ class TraceThread(threading.Thread):
             if (not isinstance(exc, StopIteration) and
                     not isinstance(exc, EOFError)):
                 logger.error(
-                    "Exception while calling {}".format(str(self.func)),
+                    "Unexpected exception while calling {}".format(
+                        str(self.func)
+                    ),
                     exc_info=exc
                 )
         finally:
