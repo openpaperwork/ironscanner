@@ -2,7 +2,7 @@
 
 ![Logo](src/ironscanner/logo.png)
 
-Collect as much information as possible on image scanners and send it to [OpenPaper.work](https://openpaper.work/).
+Collect as much information as possible on a image scanner, run test scan, and send a detailed report to [OpenPaper.work](https://openpaper.work/scanner_db/).
 
 
 ## Linux
