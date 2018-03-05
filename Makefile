@@ -16,6 +16,7 @@ version: ${VERSION_FILE}
 
 clean:
 	rm -rf build dist
+	rm -rf src/ironscanner.egg-info
 	rm -f src/ironscanner/version.txt
 
 doc:

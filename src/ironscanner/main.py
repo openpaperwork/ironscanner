@@ -369,6 +369,16 @@ class ScannerSettings(object):
                 txt += " (recommended)"
             modes.append((txt, mode))
 
+        GLib.idle_add(
+            self.widget_tree.get_object('comboboxSources').set_active, 0
+        )
+        GLib.idle_add(
+            self.widget_tree.get_object('comboboxResolutions').set_active, 0
+        )
+        GLib.idle_add(
+            self.widget_tree.get_object('comboboxModes').set_active, 0
+        )
+
     def _on_scanner_type_selected(self, combobox):
         types = self.widget_tree.get_object("liststoreScannerTypes")
         img_file = types[combobox.get_active()][2]
@@ -643,6 +653,7 @@ class ScanThread(threading.Thread):
             logger.info("Maximizing scan area ...")
             trace.trace(pyinsane2.maximize_scan_area, self.scanner)
 
+            page_nb = 0
             logger.info("Starting scan session ...")
             try:
                 # we set multiple = True, pyinsane will take care of switching
@@ -650,7 +661,6 @@ class ScanThread(threading.Thread):
                 scan_session = trace.trace(self.scanner.scan, multiple=True)
                 expected_size = scan_session.scan.expected_size
                 logger.info("Expected image size: {}".format(expected_size))
-                page_nb = 0
                 while True:
                     logger.info("Scanning page {}".format(page_nb))
                     try:
@@ -677,9 +687,9 @@ class ScanThread(threading.Thread):
             logger.info("### SCAN TEST SUCCESSFUL ###")
         except Exception as exc:
             logger.info("### SCAN TEST FAILED ###", exc_info=exc)
-            GLib.idle_add(self.result_cb)
+            GLib.idle_add(self.result_cb, False)
             return
-        GLib.idle_add(self.result_cb)
+        GLib.idle_add(self.result_cb, page_nb > 0)
 
 
 class ScanTest(object):
@@ -725,11 +735,14 @@ class ScanTest(object):
             progression
         )
 
-    def _on_scan_result(self):
+    def _on_scan_result(self, ok):
         self.widget_tree.get_object("mainform").set_page_complete(
             self.widget_tree.get_object("pageTestScan"),
             True
         )
+        self.widget_tree.get_object(
+            "radiobuttonScanSuccessful"
+        ).set_sensitive(ok)
         self.log_handler.validate()
 
     def complete_report(self, report):
