@@ -354,10 +354,44 @@ class ScannerSettings(object):
         modes = self.widget_tree.get_object("liststoreModes")
         modes.clear()
 
+        has_feeder = False
+        has_flatbed = False
+        has_duplex = False
         for source in scanner.options['source'].constraint:
             sources.append((source, source))
+            source = source.lower()
+            if "feeder" in source or "ADF" in source:
+                has_feeder = True
+            elif "flatbed" in source:
+                has_flatbed = True
+            if "duplex" in source:
+                has_duplex = True
         GLib.idle_add(
             self.widget_tree.get_object('comboboxSources').set_active, 0
+        )
+
+        # Let's play a guessing game
+        scanner_type = None
+        if has_feeder and has_flatbed:
+            scanner_type = "flatbed_adf"
+            if has_duplex:
+                scanner_type += "_duplex"
+        elif has_feeder:
+            scanner_type = "adf"
+            if has_duplex:
+                scanner_type += "_duplex"
+        elif has_flatbed:
+            scanner_type = "flatbed"
+        active_idx = -1
+        if scanner_type is not None:  # not unknown
+            l = self.widget_tree.get_object("liststoreScannerTypes")
+            for (idx, (name, scan_id, _)) in enumerate(l):
+                if scan_id == scanner_type:
+                    active_idx = idx
+                    break
+        GLib.idle_add(
+            self.widget_tree.get_object('comboboxScannerTypes').set_active,
+            active_idx
         )
 
         active_idx = 0
