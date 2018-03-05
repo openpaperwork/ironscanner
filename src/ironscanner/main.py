@@ -356,27 +356,35 @@ class ScannerSettings(object):
 
         for source in scanner.options['source'].constraint:
             sources.append((source, source))
-        for resolution in self._get_resolutions(
-                    scanner.options['resolution'].constraint
-                ):
-            txt = str(resolution)
-            if resolution == 150:
-                txt += " (recommended)"
-            resolutions.append((txt, resolution))
-        for mode in scanner.options['mode'].constraint:
-            txt = mode
-            if mode.lower() == "color":
-                txt += " (recommended)"
-            modes.append((txt, mode))
-
         GLib.idle_add(
             self.widget_tree.get_object('comboboxSources').set_active, 0
         )
+
+        active_idx = 0
+        for (idx, resolution) in enumerate(self._get_resolutions(
+                    scanner.options['resolution'].constraint
+                )):
+            txt = str(resolution)
+            if resolution == 150:
+                active_idx = idx
+                txt += " (recommended)"
+            resolutions.append((txt, resolution))
         GLib.idle_add(
-            self.widget_tree.get_object('comboboxResolutions').set_active, 0
+            self.widget_tree.get_object('comboboxResolutions').set_active,
+            active_idx
         )
+
+        active_idx = 0
+        for (idx, mode) in enumerate(scanner.options['mode'].constraint):
+            txt = mode
+            if mode.lower() == "color":
+                active_idx = idx
+                txt += " (recommended)"
+            elif "color" in mode.lower() and active_idx == 0:
+                active_idx = idx
+            modes.append((txt, mode))
         GLib.idle_add(
-            self.widget_tree.get_object('comboboxModes').set_active, 0
+            self.widget_tree.get_object('comboboxModes').set_active, active_idx
         )
 
     def _on_scanner_type_selected(self, combobox):
