@@ -373,7 +373,7 @@ This program is designed to collect as much information as possible regarding yo
                                 <property name="visible">True</property>
                                 <property name="sensitive">False</property>
                                 <property name="can_focus">False</property>
-                                <property name="label" translatable="yes">Source(s)</property>
+                                <property name="label" translatable="yes">Test source</property>
                                 <property name="width_chars">15</property>
                               </object>
                               <packing>
