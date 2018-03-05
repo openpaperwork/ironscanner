@@ -17,7 +17,7 @@ chmod +x /tmp/ironscanner
 
 ## Windows
 
-[Download](https://download.openpaper.work/windows/amd64/ironscanner.exe) and run.
+[Download](https://download.openpaper.work/windows/amd64/ironscanner.exe), click "yes" on the ten of thousands security warnings, and run.
 
 
 ## Development
