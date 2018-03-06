@@ -653,8 +653,14 @@ System informations that will be attached to the report:
         if page is not self.widget_tree.get_object("pageSummary"):
             return
         if self.settings.get_scanner_id() is None:
-            # skip the test scan and the result questions
-            assistant.set_current_page(assistant.get_current_page() + 4)
+            # skip the test scan
+            self.widget_tree.get_object(
+                "radiobuttonScanSuccessful"
+            ).set_sensitive(False)
+            self.widget_tree.get_object(
+                "radiobuttonScanSuccessful"
+            ).set_active(False)
+            assistant.set_current_page(assistant.get_current_page() + 2)
             return
         logger.info("Preparing summary")
         values = {}
