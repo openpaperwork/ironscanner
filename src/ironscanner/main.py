@@ -241,9 +241,12 @@ class ScannerSettings(object):
         if not isinstance(resolutions, tuple):
             return resolutions
 
-        interval = resolutions[2]
-        if interval < 25:
+        if len(resolutions) <= 2:
             interval = 25
+        else:
+            interval = resolutions[2]
+            if interval < 25:
+                interval = 25
         if (resolutions[1] - resolutions[0]) / interval > MAX_CHOICES:
             # limit the choices
             new_interval = int((resolutions[1] - resolutions[0]) / MAX_CHOICES)
