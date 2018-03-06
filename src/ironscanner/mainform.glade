@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.20.2 -->
+<!-- Generated with glade 3.20.3 -->
 <interface>
   <requires lib="gtk+" version="3.14"/>
   <object class="GtkFileFilter" id="filefilterImage">
@@ -634,6 +634,7 @@ This program is designed to collect as much information as possible regarding yo
                             <property name="can_focus">True</property>
                             <property name="hexpand">True</property>
                             <property name="primary_icon_tooltip_text" translatable="yes">Example: "Brother"</property>
+                            <property name="placeholder_text" translatable="yes">Required</property>
                           </object>
                           <packing>
                             <property name="left_attach">1</property>
@@ -648,6 +649,7 @@ This program is designed to collect as much information as possible regarding yo
                             <property name="hexpand">True</property>
                             <property name="primary_icon_tooltip_text" translatable="yes">Scanner model name (without the vendor name)
 Example: "DS-620"</property>
+                            <property name="placeholder_text" translatable="yes">Required</property>
                           </object>
                           <packing>
                             <property name="left_attach">1</property>
@@ -1124,6 +1126,9 @@ Ready to send the results to Openpaper.work.</property>
         <property name="complete">True</property>
         <property name="has_padding">False</property>
       </packing>
+    </child>
+    <child>
+      <placeholder/>
     </child>
     <child>
       <placeholder/>
