@@ -313,7 +313,7 @@ class ScannerSettings(object):
         vadj.set_value(vadj.get_upper())
 
     def _on_scanner_selected(self, combobox):
-        scanner = self.get_scanner()
+        scanner = self.get_scanner(dummy_allowed=False)
 
         self._set_scanner_selected(scanner)
         if scanner is None:
@@ -444,13 +444,15 @@ class ScannerSettings(object):
         liststore = self.widget_tree.get_object("liststoreDevices")
         active = self.widget_tree.get_object("comboboxDevices").get_active()
         if active < 0 or active >= len(liststore):
-            return dummy.DummyScanner()
+            return None
         return liststore[active][1]
 
-    def get_scanner(self):
+    def get_scanner(self, dummy_allowed=True):
         devid = self.get_scanner_id()
         if devid is None:
-            return devid
+            if dummy_allowed:
+                return dummy.DummyScanner()
+            return None
         scanner = self.scanners[devid]
         return scanner
 
