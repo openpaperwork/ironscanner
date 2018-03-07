@@ -2,11 +2,6 @@
 <!-- Generated with glade 3.20.3 -->
 <interface>
   <requires lib="gtk+" version="3.14"/>
-  <object class="GtkFileFilter" id="filefilterImage">
-    <mime-types>
-      <mime-type>image/*</mime-type>
-    </mime-types>
-  </object>
   <object class="GtkListStore" id="liststoreDevices">
     <columns>
       <!-- column-name name -->
@@ -545,7 +540,6 @@ This program is designed to collect as much information as possible regarding yo
                               <object class="GtkFileChooserButton" id="filechooserPicture">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="filter">filefilterImage</property>
                                 <property name="title" translatable="yes">Select a photo</property>
                               </object>
                               <packing>
@@ -1126,6 +1120,9 @@ Ready to send the results to Openpaper.work.</property>
         <property name="complete">True</property>
         <property name="has_padding">False</property>
       </packing>
+    </child>
+    <child>
+      <placeholder/>
     </child>
     <child>
       <placeholder/>
