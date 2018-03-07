@@ -637,7 +637,7 @@ Summary of the test:
 
 Personal information that will be attached to the report:
 - Name: {user_name}
-- Email: {user_email}
+- Email: xxxxxx
 
 System informations that will be attached to the report:
 {sys}
