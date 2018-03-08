@@ -707,9 +707,22 @@ class ScanThread(threading.Thread):
             logger.info("### SCAN TEST ###")
             for (k, v) in self.settings.items():
                 logger.info("Configuring scanner: {} = {}".format(k, v))
-                trace.trace(pyinsane2.set_scanner_opt, self.scanner, k, [v])
+                try:
+                    trace.trace(pyinsane2.set_scanner_opt, self.scanner,
+                                k, [v])
+                except Exception as exc:
+                    logger.warning(
+                        "Failed to set option '{}'='{}'".format(k, v),
+                        exc_info=exc
+                    )
             logger.info("Maximizing scan area ...")
-            trace.trace(pyinsane2.maximize_scan_area, self.scanner)
+            try:
+                trace.trace(pyinsane2.maximize_scan_area, self.scanner)
+            except Exception as exc:
+                logger.warning(
+                    "Failed to maximize scan area",
+                    exc_info=exc
+                )
 
             page_nb = 0
             logger.info("Starting scan session ...")
