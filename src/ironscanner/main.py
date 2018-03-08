@@ -360,18 +360,19 @@ class ScannerSettings(object):
         has_feeder = False
         has_flatbed = False
         has_duplex = False
-        for source in scanner.options['source'].constraint:
-            sources.append((source, source))
-            source = source.lower()
-            if "feeder" in source or "ADF" in source:
-                has_feeder = True
-            elif "flatbed" in source:
-                has_flatbed = True
-            if "duplex" in source:
-                has_duplex = True
-        GLib.idle_add(
-            self.widget_tree.get_object('comboboxSources').set_active, 0
-        )
+        if 'source' in scanner.options:
+            for source in scanner.options['source'].constraint:
+                sources.append((source, source))
+                source = source.lower()
+                if "feeder" in source or "ADF" in source:
+                    has_feeder = True
+                elif "flatbed" in source:
+                    has_flatbed = True
+                if "duplex" in source:
+                    has_duplex = True
+            GLib.idle_add(
+                self.widget_tree.get_object('comboboxSources').set_active, 0
+            )
 
         # Let's play a guessing game
         scanner_type = None
@@ -491,9 +492,13 @@ class ScannerSettings(object):
             dev_type = "None"
         else:
             scanner = self.get_scanner()
-            src = self.widget_tree.get_object('liststoreSources')[
-                self.widget_tree.get_object('comboboxSources').get_active()
-            ][1]
+            src_idx = self.widget_tree.get_object(
+                'comboboxSources').get_active()
+            if src_idx >= 0:
+                src = self.widget_tree.get_object(
+                    'liststoreSources')[src_idx][1]
+            else:
+                src = "none"
             resolution = self.widget_tree.get_object('liststoreResolutions')[
                 self.widget_tree.get_object('comboboxResolutions').get_active()
             ][1]
