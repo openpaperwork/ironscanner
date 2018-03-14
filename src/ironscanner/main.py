@@ -588,9 +588,14 @@ class SysInfo(object):
         except Exception as exc:
             logger.warning("Failed to get uname", exc_info=exc)
             uname = "unknown"
+        cpu_freq = psutil.cpu_freq()
+        if cpu_freq is not None:
+            cpu_freq = int(cpu_freq.max)
+        else:
+            cpu_freq = 0
         return {
             'sys_arch': platform.architecture(),
-            'sys_cpu_freq': int(psutil.cpu_freq().max),
+            'sys_cpu_freq': cpu_freq,
             'sys_machine': platform.machine(),
             'sys_mem': int(psutil.virtual_memory().total),
             'sys_nb_cpus': multiprocessing.cpu_count(),
