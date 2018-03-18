@@ -30,6 +30,6 @@ git clone https://github.com/openpaperwork/ironscanner.git
 cd ironscanner
 virtualenv -p python3 --system-site-packages venv
 source venv/bin/activate
-python3 ./setup.py install
+make install  # will run python3 ./setup.py install
 ironscanner
 ```
