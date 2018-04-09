@@ -2,15 +2,14 @@
 
 import base64
 import logging
+import os
 import sys
+import tempfile
 
 logger = logging.getLogger(__name__)
 
 
 class LogTracker(logging.Handler):
-    # Assuming 1KB per line, it makes about 512MB of RAM
-    # (+ memory allocator overhead)
-    MAX_LINES = 512 * 1000
     LOG_LEVELS = {
         "DEBUG": logging.DEBUG,
         "INFO": logging.INFO,
@@ -23,16 +22,11 @@ class LogTracker(logging.Handler):
         self._formatter = logging.Formatter(
             '%(levelname)-6s %(asctime)-15s %(name)-10s %(message)s'
         )
-        self.output = []
+        self.outfile = None
 
     def emit(self, record):
         line = self._formatter.format(record)
-        self.output.append(line)
-        if len(self.output) > self.MAX_LINES:
-            self.output.pop(0)
-
-    def get_logs(self):
-        return "\n".join(self.output)
+        sys.stderr.write(line + "\n")
 
     def on_uncatched_exception_cb(self, exc_type, exc_value, exc_tb):
         logger.error(
@@ -44,19 +38,31 @@ class LogTracker(logging.Handler):
         )
 
     def init(self):
-        class StreamHandler(logging.StreamHandler):
-            def emit(self, record):
-                if record.levelno < logging.INFO:
-                    return
-                super().emit(record)
+        self.outfile = tempfile.NamedTemporaryFile(
+            mode="w+", newline='\n', prefix='ironscanner_', suffix='.txt',
+            delete=False
+        )
+        sys.stderr.write(
+            "Logs will be stored temporarily in: {}\n".format(
+                self.outfile.name
+            )
+        )
+
+        os.dup2(self.outfile.fileno(), sys.stdout.fileno())
+        os.dup2(self.outfile.fileno(), sys.stderr.fileno())
 
         logger = logging.getLogger()
-        handler = StreamHandler()
-        handler.setFormatter(self._formatter)
-        logger.addHandler(handler)
         logger.addHandler(self)
         sys.excepthook = self.on_uncatched_exception_cb
         logger.setLevel(logging.DEBUG)
+
+    def get_logs(self):
+        self.outfile.flush()
+        logs = None
+        with open(self.outfile.name, 'r') as fd:
+            logs = fd.read()
+        self.cleanup()
+        return logs
 
     def complete_report(self, report):
         traces = ""
@@ -67,6 +73,11 @@ class LogTracker(logging.Handler):
             traces = "(Exception: {})".format(str(exc))
             logger.error("Exception while encoding traces", exc_info=exc)
         report['traces'] = traces
+
+    def cleanup(self):
+        if os.path.exists(self.outfile.name):
+            # os.unlink(self.outfile.name)
+            pass
 
     def __str__(self):
         return "Traces"

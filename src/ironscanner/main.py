@@ -123,9 +123,6 @@ class LogHandler(logging.Handler):
         self.buf.set_text("\n".join(self.output_lines))
         self.scrollbar.set_value(self.scrollbar.get_upper())
 
-    def get_logs(self):
-        return self.output_lines
-
 
 class ScannerFinder(threading.Thread):
     def __init__(self, cb):
@@ -959,49 +956,52 @@ def run_pyinsane2_daemon():
 def main():
     g_log_tracker.init()
 
-    if getattr(sys, 'frozen', False):
-        pyinsane_daemon = os.getenv('PYINSANE_DAEMON', '1')
-        pyinsane_daemon = False if int(pyinsane_daemon) > 0 else True
-        if pyinsane_daemon:
-            # WORKAROUND for the Pyinsane workaround ... (see Linux/Sane
-            # implementation)
-            run_pyinsane2_daemon()
-            return
-
-    logger.info("Initializing pyinsane2 ...")
-    trace.trace(pyinsane2.init)
-    logger.info("Pyinsane2 ready")
-
     try:
-        main_loop = GLib.MainLoop()
+        if getattr(sys, 'frozen', False):
+            pyinsane_daemon = os.getenv('PYINSANE_DAEMON', '1')
+            pyinsane_daemon = False if int(pyinsane_daemon) > 0 else True
+            if pyinsane_daemon:
+                # WORKAROUND for the Pyinsane workaround ... (see Linux/Sane
+                # implementation)
+                run_pyinsane2_daemon()
+                return
 
-        application = Gtk.Application()
+        logger.info("Initializing pyinsane2 ...")
+        trace.trace(pyinsane2.init)
+        logger.info("Pyinsane2 ready")
 
-        widget_tree = util.load_uifile("mainform.glade")
+        try:
+            main_loop = GLib.MainLoop()
 
-        Greeting(widget_tree)
-        MainForm(application, main_loop, widget_tree)
-        user_info = PersonalInfo(widget_tree)
-        scan_settings = ScannerSettings(widget_tree)
-        sys_info = SysInfo()
-        TestSummary(widget_tree, scan_settings,
-                    [user_info, scan_settings, sys_info])
-        scan_test = ScanTest(widget_tree, scan_settings)
-        user_comment = UserComment(widget_tree)
+            application = Gtk.Application()
 
-        ReportSender(widget_tree, [
-            user_info, scan_settings, sys_info, scan_test, user_comment,
-            g_log_tracker,
-        ])
+            widget_tree = util.load_uifile("mainform.glade")
 
-        application.register()
+            Greeting(widget_tree)
+            MainForm(application, main_loop, widget_tree)
+            user_info = PersonalInfo(widget_tree)
+            scan_settings = ScannerSettings(widget_tree)
+            sys_info = SysInfo()
+            TestSummary(widget_tree, scan_settings,
+                        [user_info, scan_settings, sys_info])
+            scan_test = ScanTest(widget_tree, scan_settings)
+            user_comment = UserComment(widget_tree)
 
-        main_loop.run()
-        logger.info("Quitting")
+            ReportSender(widget_tree, [
+                user_info, scan_settings, sys_info, scan_test, user_comment,
+                g_log_tracker,
+            ])
+
+            application.register()
+
+            main_loop.run()
+            logger.info("Quitting")
+        finally:
+            logger.info("Exiting Pyinsane2")
+            pyinsane2.exit()
     finally:
-        logger.info("Exiting Pyinsane2")
-        pyinsane2.exit()
-    logger.info("Good bye")
+        logger.info("Good bye")
+        g_log_tracker.cleanup()
 
 
 if __name__ == "__main__":
