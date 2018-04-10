@@ -955,14 +955,17 @@ def run_pyinsane2_daemon():
 
 def main():
     os.environ['SANE_DEBUG_DLL'] = "255"
-    os.environ['SANE_DEBUG_FUJITSU'] = "20"
-    os.environ['SANE_DEBUG_EPJITSU'] = "20"
-    os.environ['SANE_DEBUG_UMAX_PP'] = "3"
-    os.environ['SANE_DEBUG_LEXMARK'] = "255"
-    os.environ['SANE_DEBUG_CANON'] = "4"
-    os.environ['SANE_DEBUG_CANON_PP'] = "4"
+
     os.environ['SANE_DEBUG_BROTHER'] = "255"  # guess
     os.environ['SANE_DEBUG_BROTHER2'] = "255"  # guess
+    os.environ['SANE_DEBUG_CANON'] = "4"
+    os.environ['SANE_DEBUG_CANON_PP'] = "4"
+    os.environ['SANE_DEBUG_EPJITSU'] = "20"
+    os.environ['SANE_DEBUG_EPSON'] = "64"
+    os.environ['SANE_DEBUG_EPSON2'] = "64"
+    os.environ['SANE_DEBUG_FUJITSU'] = "20"
+    os.environ['SANE_DEBUG_LEXMARK'] = "255"
+    os.environ['SANE_DEBUG_UMAX_PP'] = "3"
 
     g_log_tracker.init()
 
