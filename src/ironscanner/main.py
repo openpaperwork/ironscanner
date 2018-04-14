@@ -728,6 +728,7 @@ class ScanThread(threading.Thread):
 
             page_nb = 0
             logger.info("Starting scan session ...")
+            scan_session = None
             try:
                 # we set multiple = True, pyinsane will take care of switching
                 # it back to False if required
@@ -756,7 +757,8 @@ class ScanThread(threading.Thread):
                                              1.0)
             except StopIteration:
                 logger.info("Got StopIteration")
-            logger.info("Scanned {} images".format(len(scan_session.images)))
+            nb = 0 if scan_session is not None else len(scan_session.images)
+            logger.info("Scanned {} images".format(nb))
             logger.info("### SCAN TEST SUCCESSFUL ###")
         except Exception as exc:
             logger.info("### SCAN TEST FAILED ###", exc_info=exc)
