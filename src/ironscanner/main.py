@@ -585,7 +585,9 @@ class SysInfo(object):
         except Exception as exc:
             logger.warning("Failed to get uname", exc_info=exc)
             uname = "unknown"
-        cpu_freq = psutil.cpu_freq()
+        cpu_freq = None
+        if hasattr(psutil, 'cpu_freq'):
+            cpu_freq = psutil.cpu_freq()
         if cpu_freq is not None:
             cpu_freq = int(cpu_freq.max)
         else:
